@@ -1,0 +1,7 @@
+{
+  "name": "KmRodadosApp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

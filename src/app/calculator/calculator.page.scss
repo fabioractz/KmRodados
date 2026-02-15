@@ -1,0 +1,160 @@
+.calculator-container {
+  /* Use Ionic background variable for adaptability */
+  background: var(--ion-color-step-50, #f4f5f8);
+  /* Dark mode override handled by Ionic automatically if we use steps/backgrounds correctly. 
+     But for a specific card-like look: */
+  background: var(--ion-card-background, #fff);
+  
+  /* Let's use a subtle gradient based on the background color to keep it modern */
+  background: linear-gradient(145deg, var(--ion-color-step-100, #e6e6e6), var(--ion-color-step-50, #ffffff));
+  
+  /* For dark mode, Ionic swaps step-100 and step-50 to be dark grays. */
+  
+  padding: 15px; /* Reduced padding */
+  border-radius: 20px; /* Smaller radius */
+  box-shadow: 
+    0 5px 15px rgba(0,0,0,0.1),
+    inset 0 1px 1px rgba(255,255,255,0.4);
+    
+  max-width: 280px; /* Reduced width (was 360px) */
+  margin: 20px auto;
+  border: 1px solid var(--ion-color-step-150, rgba(0,0,0,0.05));
+}
+
+/* Dark mode specific override if needed, but using steps usually works. 
+   However, let's ensure the gradient looks "premium" in both. */
+@media (prefers-color-scheme: dark) {
+  .calculator-container {
+    background: linear-gradient(145deg, #2b2d31, #1e2023); /* Keep the nice dark one for dark mode users */
+    box-shadow: 
+      0 10px 20px rgba(0,0,0,0.4),
+      inset 0 1px 1px rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+}
+
+/* To support Ionic's class-based dark mode toggling (if implemented via .dark class on body) */
+:host-context(body.dark) .calculator-container {
+  background: linear-gradient(145deg, #2b2d31, #1e2023);
+  box-shadow: 
+    0 10px 20px rgba(0,0,0,0.4),
+    inset 0 1px 1px rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+
+.calc-display {
+  background: var(--ion-color-step-100, rgba(0,0,0,0.05));
+  color: var(--ion-text-color, #000);
+  font-size: 2.5rem; /* Reduced font size */
+  font-weight: 300;
+  text-align: right;
+  padding: 15px 20px; /* Reduced padding */
+  border-radius: 12px; /* Smaller radius */
+  margin-bottom: 20px;
+  overflow-x: auto;
+  white-space: nowrap;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+  
+  /* Add subtle border for definition */
+  border: 1px solid var(--ion-color-step-200, rgba(0,0,0,0.05));
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px; /* Reduced gap */
+}
+
+/* Base button styles */
+.calc-grid ion-button {
+  --border-radius: 12px; /* Smaller radius */
+  height: 50px; /* Fixed height for smaller buttons */
+  margin: 0;
+  font-size: 1.2rem; /* Adjusted font size */
+  font-weight: 500;
+  --box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.1s;
+}
+
+.calc-grid ion-button:active {
+  transform: scale(0.95);
+}
+
+/* Number buttons */
+.calc-grid ion-button[color="light"] {
+  --background: var(--ion-color-step-50, #fff);
+  --color: var(--ion-text-color, #333);
+  --background-activated: var(--ion-color-step-150, #f0f0f0);
+}
+
+/* Operator buttons (+, -, *, /) */
+.calc-grid ion-button[color="primary"] {
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-primary-contrast);
+  font-weight: 600;
+}
+
+/* Equals button */
+.calc-grid ion-button[color="primary"]:last-child {
+  --background: var(--ion-color-success); /* Use success color for equals */
+}
+
+/* Clear/Special buttons */
+.calc-grid ion-button[fill="outline"] {
+  --border-color: var(--ion-color-medium);
+  --color: var(--ion-color-medium);
+  --border-width: 1px;
+}
+
+.double-col {
+  grid-column: span 2;
+}
+
+/* Menu Styles */
+.menu-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 60vh;
+}
+
+.menu-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--ion-card-background, #fff);
+  border-radius: 20px;
+  padding: 14px 18px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  width: 100%;
+  height: auto;
+  
+  &:active {
+    transform: scale(0.95);
+    background: var(--ion-color-step-50, #f9f9f9);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  ion-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    margin-right: 0;
+    color: var(--ion-color-primary);
+  }
+
+  label {
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--ion-text-color);
+    line-height: 1.3;
+  }
+}

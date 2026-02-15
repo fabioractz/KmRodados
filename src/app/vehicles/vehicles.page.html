@@ -1,0 +1,126 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Veículos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Veículos</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <div class="ion-padding">
+    
+    <!-- Resumo Geral (Movido da Home) -->
+    <ion-card class="ion-margin-bottom">
+      <ion-card-header>
+        <ion-card-subtitle>Resumo Geral</ion-card-subtitle>
+        <ion-card-title>Minha Frota</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <h1 style="font-size: 3rem; margin: 10px 0;">{{ vehicles.length }}</h1>
+        <p>Veículos cadastrados</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Botão para abrir o formulário -->
+    <!-- (Removido daqui e movido para fora do div.ion-padding) -->
+    
+    
+
+    <div *ngIf="vehicles.length > 0 && !isFormVisible" class="ion-margin-top">
+      <h3>Meus Veículos</h3>
+      
+      <ion-card *ngFor="let vehicle of vehicles" class="ion-margin-bottom vehicle-card">
+        <div class="vehicle-actions" role="toolbar" aria-label="Ações do veículo" aria-orientation="vertical">
+          <ion-button
+            fill="clear"
+            (click)="setDefault(vehicle)"
+            [attr.aria-label]="vehicle.isDefault ? 'Veículo padrão' : 'Definir como veículo padrão'"
+            [attr.title]="vehicle.isDefault ? 'Veículo padrão' : 'Definir como veículo padrão'"
+            [attr.aria-pressed]="vehicle.isDefault"
+          >
+            <ion-icon [name]="vehicle.isDefault ? 'star' : 'star-outline'" [color]="vehicle.isDefault ? 'warning' : 'medium'" aria-hidden="true"></ion-icon>
+            <span class="sr-only">{{ vehicle.isDefault ? 'Veículo padrão' : 'Definir como veículo padrão' }}</span>
+          </ion-button>
+          <ion-button
+            fill="clear"
+            (click)="editVehicle(vehicle)"
+            [attr.aria-label]="'Editar ' + vehicle.model"
+            [attr.title]="'Editar ' + vehicle.model"
+          >
+            <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+            <span class="sr-only">Editar {{ vehicle.model }}</span>
+          </ion-button>
+          <ion-button
+            fill="clear"
+            color="danger"
+            (click)="deleteVehicle(vehicle)"
+            [attr.aria-label]="'Excluir ' + vehicle.model"
+            [attr.title]="'Excluir ' + vehicle.model"
+          >
+            <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
+            <span class="sr-only">Excluir {{ vehicle.model }}</span>
+          </ion-button>
+        </div>
+        <ion-card-content>
+          <div class="vehicle-card-layout">
+            <div class="icon-cell">
+              <ion-icon [name]="getVehicleIcon(vehicle.type)" color="primary" size="large"></ion-icon>
+            </div>
+            <div class="title-cell">
+              <h2>{{ vehicle.model }}</h2>
+            </div>
+            <div class="details-cell">
+              <div class="vehicle-details">
+                <p><strong>Tipo:</strong> {{ getVehicleTypeName(vehicle.type) || '-' }}</p>
+                <p><strong>Placa:</strong> {{ vehicle.plate ? (vehicle.plate | uppercase) : '-' }}</p>
+                <p>
+                  <strong>Odômetro (Inicial):</strong>
+                  <span
+                    *ngIf="vehicle.odometer != null"
+                    class="icone-ajuda-odometro"
+                    tabindex="0"
+                    (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
+                  {{ vehicle.odometer != null ? (vehicle.odometer | number) + ' km' : '-' }}
+                </p>
+                <p><strong>Consumo (Inicial):</strong> {{ vehicle.consumption != null ? (vehicle.consumption | number:'1.2-2') + ' km/L' : '-' }}</p>
+                <p><strong>Observações:</strong> {{ vehicle.observations ? vehicle.observations : '-' }}</p>
+              </div>
+            </div>
+          </div>
+          <p *ngIf="vehicle.observations"><strong>Obs:</strong> {{ vehicle.observations }}</p>
+
+          <ion-grid>
+            <ion-row>
+              <ion-col size="6">
+                <ion-button expand="block" color="success" fill="solid" size="small" (click)="goToSupply(vehicle)">
+                  <div class="ion-text-center">
+                    <ion-icon name="gas-station" style="font-size: 20px; display: block; margin: 0 auto; color: white;"></ion-icon>
+                    <span style="font-size: 10px; color: white;">Abastecer</span>
+                  </div>
+                </ion-button>
+              </ion-col>
+              <ion-col size="6">
+                <ion-button expand="block" color="danger" fill="solid" size="small" (click)="goToMaintenance(vehicle)">
+                  <div class="ion-text-center">
+                    <ion-icon name="construct-outline" style="font-size: 20px; display: block; margin: 0 auto; color: white;"></ion-icon>
+                    <span style="font-size: 10px;">Manutenção</span>
+                  </div>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- Botão para abrir o formulário (Posicionamento Fixo) -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="ion-margin-bottom ion-margin-end">
+    <ion-fab-button (click)="toggleForm()" color="light">
+      <ion-icon [name]="isFormVisible ? 'remove' : 'add'"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

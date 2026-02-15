@@ -1,0 +1,118 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Configurações</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Configurações</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-list>
+    <ion-radio-group [value]="themeMode" (ionChange)="changeTheme($event)">
+      <ion-list-header>
+        <ion-label>Tema</ion-label>
+      </ion-list-header>
+
+      <ion-item button (click)="selecionarTema('system', $event)" detail="false">
+        <ion-icon slot="start" name="settings-outline"></ion-icon>
+        <ion-label>Sistema</ion-label>
+        <ion-radio slot="end" value="system"></ion-radio>
+      </ion-item>
+
+      <ion-item button (click)="selecionarTema('light', $event)" detail="false">
+        <ion-icon slot="start" name="sunny-outline"></ion-icon>
+        <ion-label>Claro</ion-label>
+        <ion-radio slot="end" value="light"></ion-radio>
+      </ion-item>
+
+      <ion-item button (click)="selecionarTema('dark', $event)" detail="false">
+        <ion-icon slot="start" name="moon-outline"></ion-icon>
+        <ion-label>Escuro</ion-label>
+        <ion-radio slot="end" value="dark"></ion-radio>
+      </ion-item>
+    </ion-radio-group>
+  </ion-list>
+
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Personalização</ion-label>
+    </ion-list-header>
+
+    <ion-item button (click)="toggleColorPicker()" detail="false">
+      <ion-icon slot="start" name="color-palette-outline"></ion-icon>
+      <ion-label>Cor do Tema</ion-label>
+      <ion-note slot="end" [style.color]="selectedColor" style="font-weight: bold; margin-right: 10px;">
+        {{ getSelectedColorName() }}
+      </ion-note>
+      <ion-icon slot="end" [name]="showColorPicker ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+    </ion-item>
+    
+    <div class="color-scroll" *ngIf="showColorPicker">
+      <div class="color-item" *ngFor="let color of colors" 
+           (click)="changeColor(color.value)"
+           [class.selected]="selectedColor === color.value">
+        <div class="color-circle" [style.background]="color.value">
+          <ion-icon name="checkmark-outline" *ngIf="selectedColor === color.value" [style.color]="color.contrast"></ion-icon>
+        </div>
+      </div>
+    </div>
+  </ion-list>
+
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Layout da Tela Inicial</ion-label>
+    </ion-list-header>
+    <ion-item lines="none">
+      <ion-text color="medium">Arraste para organizar a ordem dos cards na Home</ion-text>
+    </ion-item>
+    <ion-reorder-group (ionItemReorder)="onReorder($event)" disabled="false">
+      <ion-item class="layout-item" *ngFor="let key of homeCardsOrder">
+        <ion-toggle slot="start"
+                    [checked]="homeCardsEnabled[key]"
+                    (ionChange)="toggleCardEnabled(key, $event)">
+        </ion-toggle>
+        <ion-label>{{ homeCardsLabels[key] }}</ion-label>
+        <ion-reorder slot="end"></ion-reorder>
+      </ion-item>
+    </ion-reorder-group>
+  </ion-list>
+
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Sobre</ion-label>
+    </ion-list-header>
+
+    <ion-item button>
+      <ion-icon slot="start" name="information-circle-outline"></ion-icon>
+      <ion-label>Versão do App</ion-label>
+      <ion-note slot="end">1.0.0</ion-note>
+    </ion-item>
+
+    <ion-item button>
+      <ion-icon slot="start" name="document-text-outline"></ion-icon>
+      <ion-label>Termos de Uso</ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div class="ion-padding">
+    <ion-button expand="block" color="primary" class="ion-margin-bottom btn-contrast-primary" (click)="downloadBackup()">
+      <ion-icon slot="start" name="cloud-download-outline"></ion-icon>
+      Fazer Backup (Download)
+    </ion-button>
+
+    <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;" accept=".json">
+
+    <ion-button expand="block" color="secondary" fill="solid" class="ion-margin-bottom btn-contrast-secondary" (click)="triggerImport()">
+      <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
+      Importar Backup
+    </ion-button>
+
+    <ion-button expand="block" color="danger" fill="solid" class="btn-contrast-danger" (click)="confirmClearData()">
+      <ion-icon slot="start" name="trash-outline"></ion-icon>
+      Apagar Todos os Dados
+    </ion-button>
+  </div>
+</ion-content>

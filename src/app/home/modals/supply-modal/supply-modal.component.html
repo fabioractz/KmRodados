@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ isEditing ? 'Editar Abastecimento' : 'Novo Abastecimento' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Fechar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-select [(ngModel)]="selectedVehiclePlate" label="Veículo" label-placement="stacked">
+      <ion-select-option *ngFor="let v of vehicles" [value]="v.plate">{{ v.model }} ({{ v.plate | uppercase }})</ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">Data</ion-label>
+    <ion-datetime-button datetime="supply-datetime"></ion-datetime-button>
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime id="supply-datetime" presentation="date" locale="pt-BR" [(ngModel)]="supplyDate"></ion-datetime>
+      </ng-template>
+    </ion-modal>
+  </ion-item>
+  <ion-item>
+    <ion-input label="Posto" label-placement="stacked" [(ngModel)]="gasStation" placeholder="Nome do posto"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">
+      Odômetro Inicial (km)
+      <span
+        class="icone-ajuda-odometro"
+        tabindex="0"
+        (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
+    </ion-label>
+    <ion-input type="number" inputmode="numeric" [(ngModel)]="initialOdometer"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-input type="number" inputmode="decimal" label="Litros" label-placement="stacked" [(ngModel)]="liters"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-input type="tel" inputmode="decimal" label="Valor Total (R$)" label-placement="stacked" [(ngModel)]="totalValueStr" (ionInput)="formatCurrency($event)" placeholder="R$ 0,00"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-textarea label="Observações" label-placement="stacked" [(ngModel)]="observations"></ion-textarea>
+  </ion-item>
+  <ion-button expand="block" class="ion-margin-top" (click)="save()">
+    {{ isEditing ? 'Atualizar' : 'Salvar' }}
+  </ion-button>
+  <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="viewHistory()">
+    Histórico
+  </ion-button>
+</ion-content>

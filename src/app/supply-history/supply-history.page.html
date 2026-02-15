@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Histórico de Abastecimentos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="supplies.length === 0" class="ion-padding ion-text-center">
+    <p>Nenhum abastecimento registrado.</p>
+  </div>
+
+  <ion-list *ngIf="supplies.length > 0">
+    <ion-item *ngFor="let supply of supplies">
+      <ion-label>
+        <h2>{{ supply.vehicleModel }} <small>({{ supply.vehiclePlate }})</small></h2>
+        <p><strong>Data:</strong> {{ supply.date | date:'dd/MM/yyyy' }}</p>
+        <p *ngIf="supply.gasStation"><strong>Posto:</strong> {{ supply.gasStation }}</p>
+        <p *ngIf="supply.odometer">
+          <strong>Odômetro:</strong>
+          <span
+            class="icone-ajuda-odometro"
+            tabindex="0"
+            (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
+          {{ supply.odometer }} km
+        </p>
+        <p *ngIf="supply.liters && supply.totalValue">
+          {{ supply.liters }}L - R$ {{ supply.totalValue | number:'1.2-2' }}
+        </p>
+        <p *ngIf="supply.observations"><em>{{ supply.observations }}</em></p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

@@ -1,0 +1,55 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Cálculo de Consumo</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Fechar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-select [(ngModel)]="calcSelectedVehicle" label="Veículo" label-placement="stacked">
+      <ion-select-option *ngFor="let v of vehicles" [value]="v.plate">{{ v.model }} ({{ v.plate | uppercase }})</ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">
+      Odômetro Inicial (km)
+      <span
+        class="icone-ajuda-odometro"
+        tabindex="0"
+        (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
+    </ion-label>
+    <ion-input type="number" inputmode="numeric" [(ngModel)]="calcInitialOdometer" (ionChange)="updateDistance()"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">
+      Odômetro Final (km)
+      <span
+        class="icone-ajuda-odometro"
+        tabindex="0"
+        (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
+    </ion-label>
+    <ion-input type="number" inputmode="numeric" [(ngModel)]="calcFinalOdometer" (ionChange)="updateDistance()"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-input type="number" inputmode="numeric" label="Distância Percorrida (km)" label-placement="stacked" [(ngModel)]="calcDist" readonly></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-input type="number" inputmode="decimal" label="Litros Abastecidos" label-placement="stacked" [(ngModel)]="calcLiters" (ionChange)="calculateConsumption()"></ion-input>
+  </ion-item>
+  <ion-item lines="none">
+    <ion-label>
+      <h2>Média de Consumo</h2>
+      <p style="font-size: 24px; font-weight: bold; color: var(--ion-color-primary);">
+        {{ calcResult ? (calcResult | number:'1.2-2') + ' km/l' : '--' }}
+      </p>
+    </ion-label>
+  </ion-item>
+  <ion-button expand="block" class="ion-margin-top" (click)="save()" [disabled]="!calcResult">
+    Salvar
+  </ion-button>
+  <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="viewHistory()">
+    Histórico
+  </ion-button>
+</ion-content>

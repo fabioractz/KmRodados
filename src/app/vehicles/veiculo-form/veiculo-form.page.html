@@ -1,0 +1,68 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/vehicles" text="Voltar"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ titulo_pagina }}</ion-title>
+  </ion-toolbar>
+  </ion-header>
+  
+  <ion-content [fullscreen]="true">
+    <ion-header collapse="condense">
+      <ion-toolbar>
+        <ion-title size="large">{{ titulo_pagina }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+  
+    <div class="ion-padding">
+      <ion-list>
+        <ion-item button detail="true" (click)=" abrirSeletorTipoVeiculo() ">
+          <ion-icon *ngIf="tipo" [name]="tipo === 'car' ? 'car-sport-outline' : tipo === 'motorcycle' ? 'moto-custom' : tipo === 'truck' ? 'truck-heavy' : tipo === 'bus' ? 'bus-outline' : 'car-outline'" slot="start" color="primary"></ion-icon>
+          <ion-icon *ngIf="!tipo" name="car-sport-outline" slot="start" color="medium"></ion-icon>
+          <ion-label position="stacked">Tipo de Veículo</ion-label>
+          <ion-text *ngIf="tipo">{{ obter_nome_tipo(tipo) }}</ion-text>
+          <ion-text *ngIf="!tipo" color="medium">Selecione o tipo</ion-text>
+        </ion-item>
+  
+        <ion-item>
+          <ion-input label="Modelo" label-placement="floating" placeholder="Ex: Fiat Uno" [(ngModel)]="modelo"></ion-input>
+        </ion-item>
+        
+        <ion-item>
+          <ion-input
+            label="Odômetro (Inicial)"
+            label-placement="floating"
+            type="number"
+            inputmode="numeric"
+            placeholder="Opcional"
+            [(ngModel)]="odometro">
+          </ion-input>
+          <span
+            slot="end"
+            class="icone-ajuda-odometro"
+            tabindex="0"
+            (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
+        </ion-item>
+  
+        <ion-item>
+          <ion-input label="Consumo (Inicial)" type="number" inputmode="decimal" label-placement="floating" placeholder="Opcional" [(ngModel)]="consumo"></ion-input>
+        </ion-item>
+  
+        <ion-item>
+          <ion-input label="Placa" label-placement="floating" placeholder="Ex: ABC-1234" [(ngModel)]="placa" style="text-transform: uppercase;"></ion-input>
+        </ion-item>
+  
+        <ion-item>
+          <ion-textarea label="Observações" label-placement="floating" placeholder="Opcional" [(ngModel)]="observacoes" rows="3"></ion-textarea>
+        </ion-item>
+      </ion-list>
+  
+      <ion-button expand="block" class="ion-margin-top" (click)="salvar()">
+        {{ placa_original ? 'Atualizar Veículo' : 'Salvar Veículo' }}
+      </ion-button>
+  
+      <ion-button expand="block" color="medium" class="ion-margin-top" (click)="cancelar()">
+        Cancelar
+      </ion-button>
+    </div>
+  </ion-content>

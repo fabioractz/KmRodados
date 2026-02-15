@@ -1,0 +1,262 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start" *ngIf="currentView !== 'menu'">
+      <ion-button (click)="setView('menu')">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      {{ currentView === 'menu' ? 'Calcular' : 
+         currentView === 'trip' ? 'Calcular Viagem' : 
+         currentView === 'consumption' ? 'Calcular Consumo' : 'Calculadora' }}
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding" [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">
+        {{ currentView === 'menu' ? 'Calcular' : 
+           currentView === 'trip' ? 'Calcular Viagem' : 
+           currentView === 'consumption' ? 'Calcular Consumo' : 'Calculadora' }}
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- MENU VIEW -->
+  <div *ngIf="currentView === 'menu'" class="menu-container">
+    <div class="menu-button" (click)="setView('consumption')">
+      <ion-icon name="speedometer-outline"></ion-icon>
+      <label>Calcular Consumo</label>
+    </div>
+    
+    <div class="menu-button" (click)="setView('trip')">
+      <ion-icon name="map-outline"></ion-icon>
+      <label>Calcular Viagem</label>
+    </div>
+
+    <div class="menu-button" (click)="setView('simple')">
+      <ion-icon name="calculator-outline"></ion-icon>
+      <label>Calculadora</label>
+    </div>
+  </div>
+
+  <!-- TRIP CALCULATOR VIEW (Existing Logic) -->
+  <div *ngIf="currentView === 'trip'">
+    <div class="ion-padding-bottom">
+      <p>Calcule quanto você vai gastar na sua viagem.</p>
+    </div>
+
+    <ion-list>
+      <ion-item>
+        <ion-select label="Selecione o Veículo" label-placement="floating" placeholder="Escolha um veículo" [(ngModel)]="selectedVehicle" (ionChange)="onVehicleChange()">
+          <ion-select-option *ngFor="let vehicle of vehicles" [value]="vehicle">
+            {{ vehicle.model }} ({{ vehicle.plate | uppercase }})
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Data</ion-label>
+        <ion-datetime-button datetime="trip-datetime"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime id="trip-datetime" presentation="date" locale="pt-BR" [(ngModel)]="tripDate"></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+
+      <ion-item>
+        <ion-input label="Distância (km)" type="number" inputmode="numeric" label-placement="floating" placeholder="Ex: 150" [(ngModel)]="distance"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input label="Preço do Combustível (R$)" type="tel" inputmode="decimal" label-placement="floating" placeholder="R$ 0,00" [(ngModel)]="fuelPriceStr" (ionInput)="formatCurrency($event)"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-textarea label="Observações" label-placement="floating" placeholder="Opcional" [(ngModel)]="costObservations" rows="3"></ion-textarea>
+      </ion-item>
+      
+      <ion-item *ngIf="selectedVehicle">
+        <ion-label>
+          <p>Consumo do Veículo</p>
+          <h2>{{ selectedVehicle.consumption }} km/L</h2>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ion-button expand="block" class="ion-margin-top" (click)="calculate()">
+      Calcular Custo
+    </ion-button>
+    <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="setHistoryOpen(true)">
+      Histórico
+    </ion-button>
+
+    <ion-card *ngIf="result !== null" class="ion-margin-top">
+      <ion-card-header>
+        <ion-card-title>Resultado</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <h2>Custo Estimado: {{ result | currency:'BRL' }}</h2>
+        <p>Litros necessários: {{ litersNeeded | number:'1.1-2' }} L</p>
+        <ion-button expand="block" color="success" class="ion-margin-top" (click)="saveTrip()">
+          {{ isEditing ? 'Atualizar Viagem' : 'Salvar Viagem' }}
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- CONSUMPTION CALCULATOR VIEW (New Logic) -->
+  <div *ngIf="currentView === 'consumption'">
+    <div class="ion-padding-bottom">
+      <p>Descubra a média de consumo do seu veículo.</p>
+    </div>
+
+    <ion-list>
+      <ion-item>
+              <ion-select [(ngModel)]="calcSelectedVehicle" label="Veículo" label-placement="stacked">
+                <ion-select-option *ngFor="let v of vehicles" [value]="v.plate">{{ v.model }} ({{ v.plate }})</ion-select-option>
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Data</ion-label>
+              <ion-datetime-button datetime="calc-consumption-datetime"></ion-datetime-button>
+              <ion-modal [keepContentsMounted]="true">
+                <ng-template>
+                  <ion-datetime id="calc-consumption-datetime" presentation="date" locale="pt-BR" [(ngModel)]="calcDate"></ion-datetime>
+                </ng-template>
+              </ion-modal>
+            </ion-item>
+      <ion-item>
+        <ion-label position="stacked">
+          Odômetro Inicial (km)
+          <span
+            class="icone-ajuda-odometro"
+            tabindex="0"
+            (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
+        </ion-label>
+        <ion-input type="number" inputmode="numeric" [(ngModel)]="calcInitialOdometer" (ionChange)="updateDistance()"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">
+          Odômetro Final (km)
+          <span
+            class="icone-ajuda-odometro"
+            tabindex="0"
+            (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
+        </ion-label>
+        <ion-input type="number" inputmode="numeric" [(ngModel)]="calcFinalOdometer" (ionChange)="updateDistance()"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input type="number" inputmode="numeric" label="Distância Percorrida (km)" label-placement="stacked" [(ngModel)]="calcDist" readonly></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input type="number" inputmode="decimal" label="Litros Abastecidos" label-placement="stacked" [(ngModel)]="calcLiters" (ionChange)="calculateConsumption()"></ion-input>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-label>
+          <h2>Média de Consumo</h2>
+          <p style="font-size: 24px; font-weight: bold; color: var(--ion-color-primary);">
+            {{ calcResult ? (calcResult | number:'1.2-2') + ' km/l' : '--' }}
+          </p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ion-button expand="block" class="ion-margin-top" (click)="saveConsumption()">
+      Salvar
+    </ion-button>
+    <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="setHistoryOpen(true)">
+      Histórico
+    </ion-button>
+  </div>
+
+  <!-- SIMPLE CALCULATOR VIEW (Existing Logic) -->
+  <div *ngIf="currentView === 'simple'">
+    <div class="calculator-container ion-margin-top">
+      <div class="calc-display">{{ calcDisplay }}</div>
+      <div class="calc-grid">
+        <ion-button (click)="clearCalculator()" color="primary" fill="outline">C</ion-button>
+        <ion-button (click)="backspace()" color="primary" fill="outline">
+          <ion-icon name="backspace-outline"></ion-icon>
+        </ion-button>
+        <ion-button (click)="percentage()" color="primary" fill="outline">%</ion-button>
+        <ion-button (click)="setOperation('/')" color="primary">/</ion-button>
+
+        <ion-button (click)="appendNumber('7')" color="light">7</ion-button>
+        <ion-button (click)="appendNumber('8')" color="light">8</ion-button>
+        <ion-button (click)="appendNumber('9')" color="light">9</ion-button>
+        <ion-button (click)="setOperation('*')" color="primary">x</ion-button>
+
+        <ion-button (click)="appendNumber('4')" color="light">4</ion-button>
+        <ion-button (click)="appendNumber('5')" color="light">5</ion-button>
+        <ion-button (click)="appendNumber('6')" color="light">6</ion-button>
+        <ion-button (click)="setOperation('-')" color="primary">-</ion-button>
+
+        <ion-button (click)="appendNumber('1')" color="light">1</ion-button>
+        <ion-button (click)="appendNumber('2')" color="light">2</ion-button>
+        <ion-button (click)="appendNumber('3')" color="light">3</ion-button>
+        <ion-button (click)="setOperation('+')" color="primary">+</ion-button>
+
+        <ion-button (click)="appendNumber('0')" class="double-col" color="light">0</ion-button>
+        <ion-button (click)="appendNumber('.')" color="light">.</ion-button>
+        <ion-button (click)="calculateResult()" color="primary">=</ion-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRIP HISTORY MODAL (Shared) -->
+  <ion-modal [isOpen]="isHistoryOpen" (didDismiss)="setHistoryOpen(false)">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ currentView === 'trip' ? 'Histórico de Viagens' : 'Histórico de Consumo' }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="setHistoryOpen(false)">Fechar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <!-- Trip History List -->
+        <ion-list *ngIf="currentView === 'trip'">
+          <ion-item *ngFor="let item of tripHistory">
+            <ion-label>
+              <h2>{{ item.trip.date | date:'dd/MM/yyyy' }} - {{ item.vehicle.model }}</h2>
+              <p>Distância: {{ item.trip.distance }} km</p>
+              <p>Consumo: {{ item.trip.consumption }} km/L</p>
+            </ion-label>
+            <ion-note slot="end" color="success" style="font-size: 1.1em; font-weight: bold;">
+              {{ item.trip.totalCost | currency:'BRL' }}
+            </ion-note>
+            <ion-button slot="end" fill="clear" (click)="editHistoryItem(item)">
+              <ion-icon name="create" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <div *ngIf="tripHistory.length === 0" class="ion-padding ion-text-center">
+            <p>Nenhuma viagem registrada.</p>
+          </div>
+        </ion-list>
+
+        <!-- Consumption History List -->
+        <ion-list *ngIf="currentView === 'consumption'">
+          <ion-item *ngFor="let item of consumptionHistory">
+            <ion-label>
+              <h2>{{ item.record.date | date:'dd/MM/yyyy' }} - {{ item.vehicle.model }}</h2>
+              <p>Distância: {{ item.record.distance }} km</p>
+              <p>Litros: {{ item.record.liters }} L</p>
+            </ion-label>
+            <ion-note slot="end" color="primary" style="font-size: 1.1em; font-weight: bold;">
+              {{ item.record.result | number:'1.2-2' }} km/L
+            </ion-note>
+          </ion-item>
+          <div *ngIf="consumptionHistory.length === 0" class="ion-padding ion-text-center">
+            <p>Nenhum consumo registrado.</p>
+          </div>
+        </ion-list>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

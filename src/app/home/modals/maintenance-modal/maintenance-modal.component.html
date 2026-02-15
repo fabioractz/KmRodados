@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ isEditing ? 'Editar Manutenção' : 'Nova Manutenção' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Fechar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-select [(ngModel)]="maintVehicle" label="Veículo" label-placement="stacked">
+      <ion-select-option *ngFor="let v of vehicles" [value]="v.plate">{{ v.model }} ({{ v.plate | uppercase }})</ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">Data</ion-label>
+    <ion-datetime-button datetime="maint-datetime"></ion-datetime-button>
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime id="maint-datetime" presentation="date" locale="pt-BR" [(ngModel)]="maintDate"></ion-datetime>
+      </ng-template>
+    </ion-modal>
+  </ion-item>
+  <ion-item>
+    <ion-input type="number" inputmode="numeric" label="Odômetro (km)" label-placement="stacked" [(ngModel)]="maintOdometer"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-input label="Resumo do Serviço" label-placement="stacked" [(ngModel)]="maintSummary" placeholder="Ex: Troca de óleo"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-textarea label="Peças / Detalhes" label-placement="stacked" [(ngModel)]="maintParts" placeholder="Ex: Filtro de óleo, 4L óleo 5w30..."></ion-textarea>
+  </ion-item>
+  <ion-item>
+    <ion-input type="tel" inputmode="decimal" label="Valor Peças (R$)" label-placement="stacked" [(ngModel)]="maintPartsValueStr" (ionInput)="handleCurrencyInput($event, 'maintPartsValueStr')" placeholder="R$ 0,00"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-input type="tel" inputmode="decimal" label="Valor Mão de Obra (R$)" label-placement="stacked" [(ngModel)]="maintServiceValueStr" (ionInput)="handleCurrencyInput($event, 'maintServiceValueStr')" placeholder="R$ 0,00"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-input label="Valor Total (R$)" label-placement="stacked" [(ngModel)]="maintTotalValueStr" readonly></ion-input>
+  </ion-item>
+  <ion-button expand="block" class="ion-margin-top" (click)="save()">
+    {{ isEditing ? 'Atualizar' : 'Salvar' }}
+  </ion-button>
+  <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="viewHistory()">
+    Histórico
+  </ion-button>
+</ion-content>

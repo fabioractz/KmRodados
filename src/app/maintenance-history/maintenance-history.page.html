@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Histórico de Manutenções</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="maintenances.length === 0" class="ion-padding ion-text-center">
+    <p>Nenhuma manutenção registrada.</p>
+  </div>
+
+  <ion-list *ngIf="maintenances.length > 0">
+    <ion-item *ngFor="let maint of maintenances">
+      <ion-label class="ion-text-wrap">
+        <h2>{{ maint.vehicleModel }} <small>({{ maint.vehiclePlate }})</small></h2>
+        <p><strong>Data:</strong> {{ maint.date | date:'dd/MM/yyyy' }}</p>
+        <p><strong>Serviço:</strong> {{ maint.summary }}</p>
+        <p *ngIf="maint.odometer">
+          <strong>Odômetro:</strong>
+          <span
+            class="icone-ajuda-odometro"
+            tabindex="0"
+            (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
+          {{ maint.odometer }} km
+        </p>
+        
+        <p *ngIf="maint.parts"><strong>Peças:</strong> {{ maint.parts }}</p>
+        
+        <div class="values-container ion-margin-top" *ngIf="maint.totalValue">
+          <p *ngIf="maint.partsValue">Peças: R$ {{ maint.partsValue | number:'1.2-2' }}</p>
+          <p *ngIf="maint.serviceValue">Mão de obra: R$ {{ maint.serviceValue | number:'1.2-2' }}</p>
+          <p><strong>Total: R$ {{ maint.totalValue | number:'1.2-2' }}</strong></p>
+        </div>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>
