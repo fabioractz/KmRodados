@@ -58,5 +58,7 @@
             <string>cstr6suwn9.skadnetwork</string>
         </dict>
     </array>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Precisamos da sua localização para sugerir postos próximos.</string>
 </dict>
 </plist>

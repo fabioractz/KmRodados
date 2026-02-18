@@ -7,9 +7,12 @@ export interface Supply {
   odometer?: number; // Kept for legacy compatibility
   initialOdometer?: number;
   finalOdometer?: number;
+  precoPorLitro?: number;
   liters?: number;
   totalValue?: number;
   gasStation?: string;
+  tipoAbastecimento?: string;
+  motorista?: string;
   observations?: string;
   average?: number;
   createdAt?: number;
@@ -301,6 +304,36 @@ export class VehicleService {
       this.vehiclesSubject.next([...this.vehicles]);
       this.saveVehicles();
       return true;
+    }
+    return false;
+  }
+
+  removerAbastecimento(plate: string, supplyId: string): boolean {
+    const normalizedPlate = plate.toUpperCase();
+    const vehicle = this.vehicles.find(v => v.plate === normalizedPlate);
+    if (vehicle && vehicle.supplies) {
+      const index = vehicle.supplies.findIndex(s => s.id === supplyId);
+      if (index !== -1) {
+        vehicle.supplies.splice(index, 1);
+        this.vehiclesSubject.next([...this.vehicles]);
+        this.saveVehicles();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  removerManutencao(plate: string, maintenanceId: string): boolean {
+    const normalizedPlate = plate.toUpperCase();
+    const vehicle = this.vehicles.find(v => v.plate === normalizedPlate);
+    if (vehicle && vehicle.maintenance) {
+      const index = vehicle.maintenance.findIndex(m => m.id === maintenanceId);
+      if (index !== -1) {
+        vehicle.maintenance.splice(index, 1);
+        this.vehiclesSubject.next([...this.vehicles]);
+        this.saveVehicles();
+        return true;
+      }
     }
     return false;
   }

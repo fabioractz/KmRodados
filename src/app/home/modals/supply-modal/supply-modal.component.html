@@ -12,21 +12,78 @@
       <ion-select-option *ngFor="let v of vehicles" [value]="v.plate">{{ v.model }} ({{ v.plate | uppercase }})</ion-select-option>
     </ion-select>
   </ion-item>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Data</ion-label>
+          <ion-datetime-button datetime="supply-data"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                id="supply-data"
+                presentation="date"
+                locale="pt-BR"
+                [(ngModel)]="supplyDate">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+      </ion-col>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Hora</ion-label>
+          <ion-datetime-button datetime="supply-hora"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                id="supply-hora"
+                presentation="time"
+                locale="pt-BR"
+                [(ngModel)]="horaAbastecimento">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
   <ion-item>
-    <ion-label position="stacked">Data</ion-label>
-    <ion-datetime-button datetime="supply-datetime"></ion-datetime-button>
-    <ion-modal [keepContentsMounted]="true">
-      <ng-template>
-        <ion-datetime id="supply-datetime" presentation="date" locale="pt-BR" [(ngModel)]="supplyDate"></ion-datetime>
-      </ng-template>
-    </ion-modal>
+    <ion-input
+      label="Posto"
+      label-placement="stacked"
+      [(ngModel)]="gasStation"
+      placeholder="Nome do posto"
+      (ionFocus)="aoFocarCampoPosto()"
+      (ionInput)="aoDigitarPosto()">
+    </ion-input>
   </ion-item>
-  <ion-item>
-    <ion-input label="Posto" label-placement="stacked" [(ngModel)]="gasStation" placeholder="Nome do posto"></ion-input>
+  <ion-item lines="none" *ngIf="exibindoCarregandoPostos">
+    <ion-label>Buscando postos próximos...</ion-label>
+    <ion-spinner slot="end" name="crescent"></ion-spinner>
   </ion-item>
+  <ion-item lines="none" *ngIf="mensagemErroPostos">
+    <ion-label color="danger">{{ mensagemErroPostos }}</ion-label>
+  </ion-item>
+  <ion-list *ngIf="exibindoListaPostos" class="lista-posto-autocomplete">
+    <ion-item
+      button
+      detail="false"
+      *ngFor="let posto of postosProximos; let indice = index"
+      (click)="selecionarPosto(posto)"
+      [class.item-zebrado]="indice % 2 === 1">
+      <div slot="start" class="logo-posto" [ngClass]="obter_classe_logo_posto(posto)">
+        <span>{{ obter_texto_logo_posto(posto) }}</span>
+      </div>
+      <ion-label>
+        <div class="nome-posto">{{ posto.name }}</div>
+        <div class="endereco-posto">{{ posto.address || 'não informado' }}</div>
+      </ion-label>
+    </ion-item>
+  </ion-list>
   <ion-item>
     <ion-label position="stacked">
-      Odômetro Inicial (km)
+      Odômetro (Km)
       <span
         class="icone-ajuda-odometro"
         tabindex="0"
@@ -35,10 +92,57 @@
     <ion-input type="number" inputmode="numeric" [(ngModel)]="initialOdometer"></ion-input>
   </ion-item>
   <ion-item>
-    <ion-input type="number" inputmode="decimal" label="Litros" label-placement="stacked" [(ngModel)]="liters"></ion-input>
+    <ion-select [(ngModel)]="tipoAbastecimento" label="Abastecimento" label-placement="stacked" interface="action-sheet">
+      <ion-select-option *ngFor="let opcao of opcoesAbastecimento" [value]="opcao">{{ opcao }}</ion-select-option>
+    </ion-select>
   </ion-item>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-input
+            type="number"
+            inputmode="decimal"
+            label="Preço/L (R$)"
+            label-placement="stacked"
+            [(ngModel)]="precoPorLitro"
+            (ionInput)="aoAlterarPrecoPorLitro()">
+          </ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col>
+        <ion-item>
+          <ion-input
+            type="tel"
+            inputmode="decimal"
+            label="Valor (R$)"
+            label-placement="stacked"
+            [(ngModel)]="totalValueStr"
+            (ionInput)="formatCurrency($event)"
+            placeholder="R$ 0,00">
+          </ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col>
+        <ion-item>
+          <ion-input
+            type="number"
+            inputmode="decimal"
+            label="Litros"
+            label-placement="stacked"
+            [(ngModel)]="liters">
+          </ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
   <ion-item>
-    <ion-input type="tel" inputmode="decimal" label="Valor Total (R$)" label-placement="stacked" [(ngModel)]="totalValueStr" (ionInput)="formatCurrency($event)" placeholder="R$ 0,00"></ion-input>
+    <ion-input
+      label="Motorista"
+      label-placement="stacked"
+      [(ngModel)]="motorista"
+      placeholder="Nome do motorista">
+    </ion-input>
   </ion-item>
   <ion-item>
     <ion-textarea label="Observações" label-placement="stacked" [(ngModel)]="observations"></ion-textarea>

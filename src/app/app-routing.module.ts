@@ -7,6 +7,10 @@ const routes: Routes = [
     loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule)
   },
   {
+    path: 'history',
+    loadChildren: () => import('./history/history.module').then(m => m.HistoryPageModule)
+  },
+  {
     path: 'supply-history',
     loadChildren: () => import('./supply-history/supply-history.module').then(m => m.SupplyHistoryPageModule)
   },

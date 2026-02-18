@@ -1,0 +1,83 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Histórico</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Histórico</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-item lines="full" class="item-ordenacao">
+    <ion-label slot="end" class="texto-ordenar-por">Ordenar por</ion-label>
+    <ion-select
+      slot="end"
+      interface="popover"
+      [value]="criterio_ordenacao"
+      (ionChange)="alterar_criterio_ordenacao($event.detail.value)">
+      <ion-select-option value="data_recente">Data (mais recentes primeiro)</ion-select-option>
+      <ion-select-option value="data_antiga">Data (mais antigos primeiro)</ion-select-option>
+      <ion-select-option value="alfabetica_az">Nome (A-Z)</ion-select-option>
+      <ion-select-option value="alfabetica_za">Nome (Z-A)</ion-select-option>
+      <ion-select-option value="tipo">Tipo</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-list class="lista-historico" lines="none">
+    <ion-item *ngFor="let item of historicoCompleto; let i = index" class="item-historico">
+      <div
+        slot="start"
+        class="caixa-icone-historico"
+        [ngClass]="{
+          'caixa-icone-abastecimento': item.type === 'supply',
+          'caixa-icone-manutencao': item.type === 'maintenance',
+          'caixa-icone-consumo': item.type === 'consumption',
+          'caixa-icone-viagem': item.type === 'trip',
+          'caixa-icone-veiculo': item.type === 'vehicle-add'
+        }"
+      >
+        <ion-icon [name]="obter_icone_item_historico(item)"></ion-icon>
+      </div>
+      <ion-label>
+        <h2>
+          {{ item.date | date:'dd/MM/yyyy' }} - {{ item.vehicle.model }}
+          <span class="tipo-veiculo">({{ obter_rotulo_tipo_item(item) }})</span>
+        </h2>
+
+        <p *ngIf="item.type === 'supply'">
+          {{ item.data.gasStation ? item.data.gasStation + ' - ' : '' }}
+          {{ item.data.totalValue | currency:'BRL' }} ({{ item.data.liters }}L)
+        </p>
+
+        <p *ngIf="item.type === 'consumption'">
+          Média: {{ item.data.result | number:'1.2-2' }} km/l ({{ item.data.distance }}km)
+        </p>
+
+        <p *ngIf="item.type === 'maintenance'">
+          {{ item.data.summary }} - {{ item.data.totalValue | currency:'BRL' }}
+        </p>
+
+        <p *ngIf="item.type === 'trip'">
+          Viagem: {{ item.data.distance }}km - Custo: {{ item.data.totalCost | currency:'BRL' }}
+        </p>
+
+        <p *ngIf="item.type === 'vehicle-add'">
+          Veículo Adicionado: {{ item.data.model }} ({{ item.data.plate | uppercase }})
+        </p>
+      </ion-label>
+      <ion-button
+        slot="end"
+        fill="clear"
+        (click)="editar_item_historico(item)"
+        *ngIf="['supply', 'maintenance', 'consumption', 'vehicle-add'].includes(item.type)">
+        <ion-icon name="create" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-item>
+    <ion-item *ngIf="historicoCompleto.length === 0">
+      <ion-label class="ion-text-center">Nenhum registro encontrado</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

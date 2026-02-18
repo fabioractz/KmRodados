@@ -3,6 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { VehiclesPage } from './vehicles.page';
 import { VeiculoFormPage } from './veiculo-form/veiculo-form.page';
+import { VeiculoAcoesPage } from './veiculo-acoes/veiculo-acoes.page';
 
 const routes: Routes = [
   {
@@ -16,6 +17,10 @@ const routes: Routes = [
   {
     path: 'form/:plate',
     component: VeiculoFormPage
+  },
+  {
+    path: 'acoes/:plate',
+    component: VeiculoAcoesPage
   }
 ];
 

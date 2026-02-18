@@ -1,0 +1,65 @@
+ .lista-posto-autocomplete {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.lista-posto-autocomplete ion-item {
+  --min-height: 44px;
+  --padding-start: 12px;
+  --inner-padding-end: 12px;
+}
+
+.lista-posto-autocomplete ion-item.item-zebrado {
+  --background: rgba(0, 0, 0, 0.02);
+}
+
+.logo-posto {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background: var(--ion-color-primary, #3880ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.logo-posto span {
+  line-height: 1;
+}
+
+.logo-posto.ipiranga {
+  background: #FFD400;
+  color: #000000;
+}
+
+.logo-posto.petrobras {
+  background: #1FA84E;
+  color: #ffffff;
+}
+
+.logo-posto.petrobras span {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.logo-posto.shell {
+  background: #D32F2F;
+  color: #ffffff;
+}
+
+.nome-posto {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.endereco-posto {
+  font-size: 12px;
+  color: var(--ion-color-medium, #808080);
+  margin-top: 2px;
+}

@@ -2,6 +2,9 @@ import { Component } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { AdsService } from './services/ads.service';
 import { App } from '@capacitor/app';
+import { environment } from '../environments/environment';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 @Component({
   selector: 'app-root',
@@ -14,18 +17,37 @@ export class AppComponent {
     addIcons({
       'truck-outline': 'assets/icon/truck-outline.svg',
       'truck-heavy': 'assets/icon/truck-heavy.svg',
-      'moto-custom': 'assets/icon/moto-custom.svg'
+      'moto-custom': 'assets/icon/moto-custom.svg',
+      'gas-station': 'assets/icon/gas-station.svg'
     });
     this.checkDarkMode();
     this.checkColor();
-    this.ads.init();
-    this.ads.preloadInterstitial();
+    this.configurar_barras_sistema();
+    if ((environment as any).ads?.enabled) {
+      this.ads.init();
+      this.ads.preloadInterstitial();
+      try {
+        App.addListener('appStateChange', (state: any) => {
+          if (state?.isActive) {
+            this.ads.preloadInterstitial();
+          }
+        });
+      } catch {}
+    }
+  }
+
+  async configurar_barras_sistema() {
     try {
-      App.addListener('appStateChange', (state: any) => {
-        if (state?.isActive) {
-          this.ads.preloadInterstitial();
-        }
-      });
+      const plataforma = Capacitor.getPlatform();
+      const corpo_escuro = document.body.classList.contains('dark');
+
+      if (plataforma === 'android') {
+        await StatusBar.setOverlaysWebView({ overlay: false });
+        await StatusBar.setStyle({ style: corpo_escuro ? Style.Dark : Style.Light });
+      } else if (plataforma === 'ios') {
+        await StatusBar.setOverlaysWebView({ overlay: true });
+        await StatusBar.setStyle({ style: corpo_escuro ? Style.Dark : Style.Light });
+      }
     } catch {}
   }
 

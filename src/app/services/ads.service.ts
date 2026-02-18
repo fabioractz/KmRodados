@@ -11,6 +11,17 @@ export class AdsService {
   private isPreloaded = false;
   private listenersReady = false;
   private platform = inject(Platform);
+  // Configuração vinda de environment:
+  // - adsEnabled: ativa/desativa totalmente os anúncios
+  // - testMode: define se o app usará IDs de teste e modo de teste do AdMob
+  //
+  // Ambientes:
+  // - environment.ts        -> desenvolvimento (production: false)
+  // - environment.prod.ts   -> produção (production: true)
+  //
+  // Você controla esses valores em:
+  //   src/environments/environment.ts
+  //   src/environments/environment.prod.ts
   private adsEnabled = (environment as any).ads?.enabled ?? true;
   private testMode = (environment as any).ads?.testMode ?? !environment.production;
   private ultimo_erro_carregamento: string | null = null;
@@ -20,10 +31,24 @@ export class AdsService {
   private ultimo_anuncio_exibido_ms = 0;
   private readonly intervalo_minimo_entre_anuncios_ms = 60000;
 
+  // IDs DO ADMOB
+  // ------------
+  // Substitua os valores abaixo pelos IDs da SUA conta AdMob.
+  // Estes IDs são os usados para anúncios de PRODUÇÃO (reais).
+  // Os IDs de TESTE padrão do AdMob já estão configurados nos campos "...TestInterstitialUnit".
+  //
+  // IMPORTANTE:
+  // - Em desenvolvimento (environment.ts), mantemos testMode: true,
+  //   então serão usados SEMPRE os IDs de teste (iosTestInterstitialUnit / androidTestInterstitialUnit).
+  // - Em produção (environment.prod.ts) com testMode: false,
+  //   serão usados os IDs reais definidos em iosInterstitialUnit / androidInterstitialUnit.
+  //
+  // Interstitial (tela cheia)
   private readonly iosAppId = 'ca-app-pub-1236052583132522~4949483732';
   private readonly androidAppId = 'ca-app-pub-1236052583132522~1313491055';
   private readonly iosInterstitialUnit = 'ca-app-pub-1236052583132522/1414387819';
   private readonly androidInterstitialUnit = 'ca-app-pub-1236052583132522/5060222420';
+  // IDs de teste oficiais do Google AdMob (não precisam ser alterados)
   private readonly iosTestInterstitialUnit = 'ca-app-pub-3940256099942544/5135589807';
   private readonly androidTestInterstitialUnit = 'ca-app-pub-3940256099942544/1033173712';
 

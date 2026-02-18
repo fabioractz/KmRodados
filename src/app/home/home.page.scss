@@ -196,3 +196,39 @@ body.dark .item-historico {
 .item-historico:last-child {
   border-bottom: none;
 }
+
+.lista-historico .caixa-icone-historico {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.lista-historico .caixa-icone-historico ion-icon {
+  font-size: 1.4rem;
+  color: #ffffff;
+}
+
+.lista-historico .caixa-icone-abastecimento {
+  background-color: var(--ion-color-success-shade);
+}
+
+.lista-historico .caixa-icone-manutencao {
+  background-color: var(--ion-color-danger-shade);
+}
+
+.lista-historico .caixa-icone-consumo {
+  background-color: var(--ion-color-dark-shade);
+}
+
+.lista-historico .caixa-icone-viagem {
+  background-color: var(--ion-color-warning-shade);
+}
+
+.lista-historico .caixa-icone-veiculo {
+  background-color: var(--ion-color-tertiary-shade);
+}

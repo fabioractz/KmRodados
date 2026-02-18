@@ -1,0 +1,65 @@
+ion-content {
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.texto-ordenar-por {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  margin-right: 8px;
+}
+
+.item-ordenacao {
+  --inner-padding-start: 8px;
+  --inner-padding-end: 16px;
+}
+
+.lista-historico ion-item:nth-child(even) {
+  --background: rgba(0, 0, 0, 0.02);
+}
+
+.lista-historico ion-item {
+  --padding-start: 16px;
+  --padding-end: 8px;
+}
+
+.tipo-veiculo {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+  margin-left: 4px;
+}
+
+.caixa-icone-historico {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.caixa-icone-historico ion-icon {
+  font-size: 1.4rem;
+  color: #ffffff;
+}
+
+.caixa-icone-abastecimento {
+  background-color: var(--ion-color-success-shade);
+}
+
+.caixa-icone-manutencao {
+  background-color: var(--ion-color-danger-shade);
+}
+
+.caixa-icone-consumo {
+  background-color: var(--ion-color-dark-shade);
+}
+
+.caixa-icone-viagem {
+  background-color: var(--ion-color-warning-shade);
+}
+
+.caixa-icone-veiculo {
+  background-color: var(--ion-color-tertiary-shade);
+}

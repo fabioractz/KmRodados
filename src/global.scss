@@ -220,3 +220,12 @@ body.dark ion-datetime::part(wheel-item active) {
     font-weight: bold;
   }
 }
+
+:root {
+  --ion-safe-area-top: env(safe-area-inset-top, 0px);
+  --ion-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+ion-header ion-toolbar {
+  padding-top: var(--ion-safe-area-top, 0px);
+}

@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { VehiclesPageRoutingModule } from './vehicles-routing.module';
 import { VehiclesPage } from './vehicles.page';
 import { VeiculoFormPage } from './veiculo-form/veiculo-form.page';
+import { VeiculoAcoesPage } from './veiculo-acoes/veiculo-acoes.page';
 
 @NgModule({
   imports: [
@@ -14,6 +15,6 @@ import { VeiculoFormPage } from './veiculo-form/veiculo-form.page';
     IonicModule,
     VehiclesPageRoutingModule
   ],
-  declarations: [VehiclesPage, VeiculoFormPage]
+  declarations: [VehiclesPage, VeiculoFormPage, VeiculoAcoesPage]
 })
 export class VehiclesPageModule {}

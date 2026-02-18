@@ -180,6 +180,20 @@
       <span class="action-label">Manutenção</span>
     </div>
 
+    <div class="quick-action-row" (click)="abrir_historico_abastecimentos()">
+      <div class="square-icon-btn" style="background-color: var(--ion-color-primary); box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb), 0.3);">
+        <ion-icon name="reader-outline" style="color: white;"></ion-icon>
+      </div>
+      <span class="action-label">Histórico de Abastecimentos</span>
+    </div>
+
+    <div class="quick-action-row" (click)="abrir_historico_manutencoes()">
+      <div class="square-icon-btn" style="background-color: var(--ion-color-tertiary); box-shadow: 0 4px 10px rgba(var(--ion-color-tertiary-rgb), 0.3);">
+        <ion-icon name="albums-outline" style="color: white;"></ion-icon>
+      </div>
+      <span class="action-label">Histórico de Manutenções</span>
+    </div>
+
 
     </ion-card-content>
   </ion-card>
@@ -198,7 +212,19 @@
     <ion-card-content *ngIf="showHistoryCard">
       <ion-list class="lista-historico" lines="none">
         <ion-item *ngFor="let item of displayedHistory" class="item-historico">
-          <ion-icon [name]="getHistoryIcon(item.type)" [color]="getHistoryColor(item.type)" slot="start"></ion-icon>
+          <div
+            slot="start"
+            class="caixa-icone-historico"
+            [ngClass]="{
+              'caixa-icone-abastecimento': item.type === 'supply',
+              'caixa-icone-manutencao': item.type === 'maintenance',
+              'caixa-icone-consumo': item.type === 'consumption',
+              'caixa-icone-viagem': item.type === 'trip',
+              'caixa-icone-veiculo': item.type === 'vehicle-add'
+            }"
+          >
+            <ion-icon [name]="obter_icone_item_historico_home(item)"></ion-icon>
+          </div>
           <ion-label>
             <h2>{{ item.date | date:'dd/MM/yyyy' }} - {{ item.vehicle.model }}</h2>
             

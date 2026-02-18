@@ -3,6 +3,8 @@ import { VehicleService, Vehicle } from '../services/vehicle.service';
 import { AlertController, ToastController } from '@ionic/angular';
 import { AdsService } from '../services/ads.service';
 import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 
@@ -50,6 +52,7 @@ export class SettingsPage implements OnInit {
     maintenance: true,
     history: true
   };
+  versao_app: string = '';
 
   constructor(
     private vehicleService: VehicleService,
@@ -104,6 +107,7 @@ export class SettingsPage implements OnInit {
       } catch {}
     }
     this.ads.preloadInterstitial();
+    this.carregarVersaoApp();
   }
 
   getSelectedColorName(): string {
@@ -203,6 +207,19 @@ export class SettingsPage implements OnInit {
         document.body.classList.remove('dark');
       }
     }
+
+    try {
+      const plataforma = Capacitor.getPlatform();
+      const corpo_escuro = document.body.classList.contains('dark');
+
+      if (plataforma === 'android') {
+        await StatusBar.setOverlaysWebView({ overlay: false });
+        await StatusBar.setStyle({ style: corpo_escuro ? Style.Dark : Style.Light });
+      } else if (plataforma === 'ios') {
+        await StatusBar.setOverlaysWebView({ overlay: true });
+        await StatusBar.setStyle({ style: corpo_escuro ? Style.Dark : Style.Light });
+      }
+    } catch {}
     const r = await this.ads.showInterstitialWithResult();
     if (!r.ok || !r.shown) {
       if (r.reason === 'throttled') {
@@ -234,6 +251,14 @@ export class SettingsPage implements OnInit {
   selecionarTema(modo: 'system' | 'light' | 'dark', ev?: Event) {
     if (ev) ev.stopPropagation();
     this.changeTheme({ detail: { value: modo } });
+  }
+
+  carregarVersaoApp() {
+    App.getInfo().then(info => {
+      this.versao_app = info.version || '';
+    }).catch(() => {
+      this.versao_app = '';
+    });
   }
 
   async downloadBackup() {

@@ -56,6 +56,13 @@ function patchInfoPlist() {
       `    <key>GADApplicationIdentifier</key>\n    <string>${iosAppId}</string>\n</dict>\n</plist>`
     );
   }
+  // Ensure NSLocationWhenInUseUsageDescription present for Geolocation
+  if (!xml.includes('<key>NSLocationWhenInUseUsageDescription</key>')) {
+    xml = xml.replace(
+      '</dict>\n</plist>',
+      `    <key>NSLocationWhenInUseUsageDescription</key>\n    <string>Precisamos da sua localização para sugerir postos próximos.</string>\n</dict>\n</plist>`
+    );
+  }
   // Ensure NSUserTrackingUsageDescription present
   if (!xml.includes('<key>NSUserTrackingUsageDescription</key>')) {
     xml = xml.replace(

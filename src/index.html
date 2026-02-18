@@ -18,6 +18,57 @@
   <!-- add to homescreen for ios -->
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <script>
+    (function () {
+      var agente = navigator.userAgent || '';
+      var m = agente.match(/Chrome\/(\d+)/);
+      var versao = m ? parseInt(m[1], 10) : 0;
+      if (versao && versao < 66) {
+        var aviso = document.createElement('div');
+        aviso.setAttribute('style', 'position:fixed;left:0;top:0;right:0;bottom:0;padding:24px;background:#0b0b0b;color:#fff;font-family:Arial,Helvetica,sans-serif;z-index:2147483647;line-height:1.4;');
+        aviso.innerHTML = '<h2 style="margin:24px 0 8px;font-size:20px;">Atualize o WebView/Chrome</h2>' +
+          '<p style="margin:0 0 12px;">Este dispositivo usa um componente WebView muito antigo (Chrome ' + versao + ').</p>' +
+          '<p style="margin:0 0 12px;">Para usar o Km Rodados, atualize o app <b>Android System WebView</b> ou <b>Google Chrome</b> pela Play Store.</p>' +
+          '<p style="margin:0;opacity:.8;">Após atualizar, reabra o aplicativo.</p>';
+        document.documentElement.appendChild(aviso);
+        window.__km_incompativel = true;
+        return;
+      }
+      if (typeof window.globalThis === 'undefined') {
+        window.globalThis = window;
+      }
+      if (typeof window.queueMicrotask === 'undefined') {
+        window.queueMicrotask = function (callback) {
+          if (window.Promise && typeof window.Promise.resolve === 'function') {
+            Promise.resolve().then(callback);
+          } else {
+            setTimeout(callback, 0);
+          }
+        };
+      }
+      if (!Array.prototype.flat) {
+        Object.defineProperty(Array.prototype, 'flat', {
+          configurable: true,
+          writable: true,
+          value: function (profundidade) {
+            var nivel = profundidade == null ? 1 : +profundidade || 0;
+            var resultado = [];
+            (function achatar(arr, d) {
+              for (var i = 0; i < arr.length; i++) {
+                var item = arr[i];
+                if (Array.isArray(item) && d > 0) {
+                  achatar(item, d - 1);
+                } else {
+                  resultado.push(item);
+                }
+              }
+            })(this, nivel);
+            return resultado;
+          }
+        });
+      }
+    })();
+  </script>
 </head>
 
 <body>

@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/home"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/home" text="Voltar"></ion-back-button>
     </ion-buttons>
     <ion-title>Histórico de Manutenções</ion-title>
   </ion-toolbar>
@@ -35,6 +35,14 @@
           <p><strong>Total: R$ {{ maint.totalValue | number:'1.2-2' }}</strong></p>
         </div>
       </ion-label>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="editar_manutencao(maint)">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" color="danger" (click)="remover_manutencao(maint)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
     </ion-item>
   </ion-list>
 </ion-content>

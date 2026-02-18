@@ -332,6 +332,13 @@ export class HomePage implements OnInit, OnDestroy {
     return idx === -1 ? 999 : idx;
   }
 
+  obter_icone_item_historico_home(item: any): string {
+    if (item.type === 'vehicle-add' && item.vehicle && item.vehicle.type) {
+      return this.vehicleService.getVehicleIcon(item.vehicle.type);
+    }
+    return this.getHistoryIcon(item.type);
+  }
+
   getHistoryIcon(type: string): string {
     switch (type) {
       case 'supply': return 'gas-station';
@@ -658,6 +665,14 @@ export class HomePage implements OnInit, OnDestroy {
       return true;
     }
     return this.handleRedirect();
+  }
+
+  abrir_historico_abastecimentos() {
+    this.router.navigate(['/supply-history']);
+  }
+
+  abrir_historico_manutencoes() {
+    this.router.navigate(['/maintenance-history']);
   }
 
   handleRedirect(): boolean {

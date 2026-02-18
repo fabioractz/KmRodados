@@ -1,16 +1,5 @@
 ion-tab-bar {
   height: auto;
   contain: content;
-  // Default safe area handling
-  padding-bottom: var(--ion-safe-area-bottom, env(safe-area-inset-bottom));
-}
-
-// Android-specific adjustment
-:host-context(.md) {
-  ion-tab-bar {
-    // Use max() to ensure:
-    // 1. Minimum 35px padding on devices reporting 0 safe-area (e.g. Android 10 with 3-button nav) to prevent overlap
-    // 2. Correct safe-area on devices with gesture nav (e.g. ~34px) without adding extra space
-    padding-bottom: max(35px, var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
-  }
+  padding-bottom: var(--ion-safe-area-bottom, env(safe-area-inset-bottom, 0px));
 }

@@ -118,6 +118,18 @@ export class VehiclesPage implements OnInit {
     this.router.navigate(['/tabs/home'], { queryParams: { action: 'calculator', plate: vehicle.plate, source: 'vehicles' } });
   }
 
+  abrirHistoricoAbastecimentos(veiculo: Vehicle) {
+    this.router.navigate(['/supply-history'], { queryParams: { plate: veiculo.plate } });
+  }
+
+  abrirHistoricoManutencoes(veiculo: Vehicle) {
+    this.router.navigate(['/maintenance-history'], { queryParams: { plate: veiculo.plate } });
+  }
+
+  abrirPaginaAcoesVeiculo(veiculo: Vehicle) {
+    this.router.navigate(['/tabs/vehicles/acoes', veiculo.plate]);
+  }
+
   saveVehicle() {
     if (this.vehicleType && this.vehicleModel && this.vehiclePlate) {
       const normalizedPlate = this.vehiclePlate.toUpperCase();
