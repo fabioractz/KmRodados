@@ -1,0 +1,183 @@
+ion-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  font-size: 16px;
+}
+
+.filters-card {
+  margin: 6px 8px 4px;
+  border-radius: 12px;
+}
+
+.filters-card ion-card-header {
+  padding: 6px 10px;
+}
+
+.filters-card ion-card-content {
+  padding: 6px 10px 8px;
+}
+
+.filters-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filters-header ion-card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-right: auto;
+}
+
+.filters-header ion-badge {
+  margin-left: auto;
+}
+
+.filters-header ion-button {
+  margin-left: 8px;
+}
+
+.total-inline {
+  margin-top: 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  color: #1f7a3a;
+}
+
+.total-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.total-value {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .filters-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.filter-block.half {
+  width: 100%;
+}
+
+.filter-label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+  color: var(--ion-color-medium);
+}
+
+.filter-block ion-select,
+.filter-block ion-segment,
+.filter-block ion-input {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+.cards-list .card-like {
+  --background: var(--ion-card-background);
+  margin: 10px 12px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.title-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.plate {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+}
+
+.date {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+}
+
+.meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 8px;
+}
+
+.amount {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ion-color-success);
+}
+
+.amount.success {
+  color: var(--ion-color-success);
+}
+
+.notes {
+  margin-top: 6px;
+  color: var(--ion-color-medium);
+}
+
+.lista-historico ion-item:nth-child(even) {
+  --background: rgba(0, 0, 0, 0.02);
+}
+
+.lista-historico ion-item {
+  --padding-start: 16px;
+  --padding-end: 8px;
+}
+
+.tipo-veiculo {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+  margin-left: 4px;
+}
+
+.caixa-icone-historico {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background-color: #1f7a3a;
+}
+
+.caixa-icone-historico ion-icon {
+  font-size: 1.4rem;
+  color: #ffffff;
+}
+
+.caixa-icone-historico.caixa-icone-receita {
+  background-color: #1f7a3a;
+}

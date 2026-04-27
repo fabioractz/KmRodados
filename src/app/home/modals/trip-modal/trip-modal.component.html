@@ -1,0 +1,125 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ isEditing ? 'Editar Viagem' : 'Nova Viagem' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Fechar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <ion-card *ngIf="hasValidationErrors" class="validation-card">
+    <ion-card-content>
+      <p><strong>Campos obrigatórios não preenchidos:</strong></p>
+      <ul>
+        <li *ngFor="let field of missingFields">{{ field }}</li>
+      </ul>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-item [class.required-field]="vehicleError">
+    <ion-select [(ngModel)]="tripVehicle" (ionChange)="vehicleError = false; aoMudarVeiculo()" label="Veículo *" label-placement="floating">
+      <ion-select-option *ngFor="let v of vehicles" [value]="v.plate">{{ v.model }} ({{ v.plate | uppercase }})</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-item [class.required-field]="dateError">
+    <ion-label position="stacked">Data *</ion-label>
+    <ion-datetime-button datetime="trip-edit-datetime"></ion-datetime-button>
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime
+          id="trip-edit-datetime"
+          presentation="date"
+          locale="pt-BR"
+          [formatOptions]="opcoesFormatoData"
+          [(ngModel)]="tripDate"
+          (ionChange)="dateError = false">
+        </ion-datetime>
+      </ng-template>
+    </ion-modal>
+  </ion-item>
+
+  <ion-item [class.required-field]="distanceError">
+    <ion-input
+      type="number"
+      inputmode="numeric"
+      label="Distância (km) *"
+      label-placement="floating"
+      [(ngModel)]="distance"
+      (ionInput)="distanceError = false">
+    </ion-input>
+  </ion-item>
+
+  <ion-item [class.required-field]="fuelPriceError">
+    <ion-input
+      type="tel"
+      inputmode="decimal"
+      label="Preço do Combustível (R$) *"
+      label-placement="floating"
+      [(ngModel)]="fuelPriceStr"
+      (ionInput)="formatFuelPrice($event); fuelPriceError = false">
+    </ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-input
+      type="tel"
+      inputmode="decimal"
+      label="Pedágio (R$)"
+      label-placement="floating"
+      [(ngModel)]="tollPriceStr"
+      (ionInput)="formatTollPrice($event)">
+    </ion-input>
+  </ion-item>
+
+  <ion-item *ngIf="tripVehicle && getConsumoVeiculo() !== null && getConsumoVeiculo() !== 0">
+    <ion-label>
+      <span class="trip-label-inline">Consumo do Veículo</span>
+      <p>{{ getConsumoVeiculo() | number:'1.2-2' }} km/L</p>
+    </ion-label>
+  </ion-item>
+  <ion-item *ngIf="tripVehicle && (getConsumoVeiculo() === null || getConsumoVeiculo() === 0)" [class.required-field]="resultError">
+    <ion-input
+      type="number"
+      inputmode="decimal"
+      label="Digite a média do veículo (km/L) *"
+      label-placement="floating"
+      placeholder="Ex: 12,5"
+      min="0.1"
+      step="0.1"
+      [(ngModel)]="consumoManual"
+      (ionInput)="resultError = false">
+    </ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-textarea
+      label="Observações"
+      label-placement="floating"
+      placeholder="Opcional"
+      [(ngModel)]="observations"
+      rows="3">
+    </ion-textarea>
+  </ion-item>
+
+  <ion-item lines="none">
+    <ion-label>
+      <h2 class="trip-cost-label">Custo Estimado</h2>
+      <p class="trip-cost-value">
+        {{ totalCost ? (totalCost | currency:'BRL') : '--' }}
+      </p>
+    </ion-label>
+  </ion-item>
+
+  <ion-button expand="block" class="ion-margin-top" (click)="calculateTotal()">
+    Calcular Custo
+  </ion-button>
+
+  <ion-button expand="block" class="ion-margin-top" (click)="save()">
+    {{ isEditing ? 'Atualizar Viagem' : 'Salvar Viagem' }}
+  </ion-button>
+
+  <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="viewHistory()">
+    {{ isEditing ? 'Ir para Histórico de Viagens' : 'Histórico' }}
+  </ion-button>
+</ion-content>

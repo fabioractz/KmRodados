@@ -1,0 +1,208 @@
+<ion-header [translucent]="true" mode="ios">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/more" text="Voltar"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Despesas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense" mode="ios">
+    <ion-toolbar>
+      <ion-title size="large">Despesas</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  
+  <div class="ion-padding">
+    <ion-card *ngIf="hasValidationErrors" class="validation-card">
+    <ion-card-content>
+      <p><strong>Campos obrigatórios não preenchidos:</strong></p>
+      <ul>
+        <li *ngFor="let field of missingFields">{{ field }}</li>
+      </ul>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- 1. Veículo -->
+  <ion-item [class.required-field]="vehicleError">
+    <ion-select [(ngModel)]="selectedVehiclePlate" (ionChange)="onVehicleChange()" label="Escolha o Veículo *" label-placement="floating" placeholder="Selecione">
+      <ion-select-option *ngFor="let v of vehicles" [value]="v.plate">
+        {{ v.model }} ({{ v.plate | uppercase }})
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <!-- 2. Tipo de Despesa -->
+  <ion-item [class.required-field]="expenseTypeError">
+    <ion-select [(ngModel)]="expenseType" (ionChange)="onExpenseTypeChange()" label="Tipo de Despesa *" label-placement="floating" interface="popover" placeholder="Selecione">
+      <ion-select-option *ngFor="let tipo of expenseTypes" [value]="tipo">
+        {{ tipo }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <!-- 3. Custo -->
+  <ion-item [class.required-field]="costError">
+    <ion-input
+      type="tel"
+      inputmode="decimal"
+      label="Custo (R$) *"
+      label-placement="floating"
+      placeholder="R$ 0,00"
+      [(ngModel)]="costStr"
+      (ionInput)="formatCost($event)">
+    </ion-input>
+  </ion-item>
+
+  <!-- Botão Mostrar mais/menos -->
+  <div class="ion-text-start ion-margin-vertical ion-padding-start">
+    <span 
+      (click)="mostrarMaisCampos = !mostrarMaisCampos" 
+      style="color: var(--ion-color-primary); cursor: pointer; text-decoration: underline;">
+      {{ mostrarMaisCampos ? '- Mostrar menos' : '+ Mostrar mais' }}
+    </span>
+  </div>
+
+  <!-- Campos Secundários -->
+  <div *ngIf="mostrarMaisCampos">
+    <!-- Data e Hora -->
+    <ion-grid>
+      <ion-row>
+        <ion-col size="7">
+          <ion-item class="datetime-item">
+            <ion-label position="fixed">Data *</ion-label>
+            <ion-datetime-button datetime="expense-date" slot="end"></ion-datetime-button>
+          </ion-item>
+        </ion-col>
+        <ion-col size="5">
+          <ion-item class="datetime-item">
+            <ion-label position="fixed">Hora</ion-label>
+            <ion-datetime-button datetime="expense-hora" slot="end"></ion-datetime-button>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime
+          id="expense-date"
+          presentation="date"
+          locale="pt-BR"
+          [formatOptions]="opcoesFormatoData"
+          [(ngModel)]="expenseDate">
+        </ion-datetime>
+      </ng-template>
+    </ion-modal>
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime
+          id="expense-hora"
+          presentation="time"
+          locale="pt-BR"
+          [(ngModel)]="horaDespesa">
+        </ion-datetime>
+      </ng-template>
+    </ion-modal>
+
+    <!-- Recorrência -->
+    <ion-item>
+      <ion-select [(ngModel)]="recurrence" (ionChange)="onRecurrenceChange()" label="Recorrência" label-placement="floating" interface="popover">
+        <ion-select-option *ngFor="let r of recurrenceOptions" [value]="r">
+          {{ r }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item lines="none" *ngIf="recurrence !== 'Única'">
+      <ion-toggle slot="start" [(ngModel)]="reminderEnabled">
+        Lembrete
+      </ion-toggle>
+    </ion-item>
+
+    <ion-item *ngIf="recurrence !== 'Única' && reminderEnabled">
+      <ion-select [(ngModel)]="reminderTime" label="Lembrar" label-placement="floating" interface="popover">
+        <ion-select-option *ngFor="let opt of reminderOptions" [value]="opt">
+          {{ opt }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Local -->
+    <ion-item>
+      <ion-input
+        type="text"
+        label="Local"
+        label-placement="floating"
+        placeholder="Opcional"
+        [(ngModel)]="local">
+      </ion-input>
+    </ion-item>
+
+    <!-- Odômetro -->
+    <ion-item class="odometer-item">
+      <ion-input
+        type="tel"
+        inputmode="decimal"
+        label="Odômetro (km)"
+        label-placement="floating"
+        [(ngModel)]="odometerStr"
+        (ionInput)="formatOdometer($event)"
+        class="odometer-input">
+      </ion-input>
+    </ion-item>
+
+    <!-- Observações -->
+    <ion-item>
+      <ion-textarea
+        label="Observações"
+        label-placement="floating"
+        auto-grow="true"
+        [(ngModel)]="notes">
+      </ion-textarea>
+    </ion-item>
+  </div>
+
+  <ion-button expand="block" class="ion-margin-top" (click)="salvar()">
+    Salvar
+  </ion-button>
+  </div>
+
+  <ion-list *ngIf="showHistory && history.length">
+    <ion-list-header>
+      <ion-label>Histórico de Despesas</ion-label>
+    </ion-list-header>
+
+    <ion-item *ngFor="let item of history">
+      <ion-label>
+        <h3>
+          {{ item.type }}
+          <span *ngIf="item.cost">
+            - {{ item.cost | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+          </span>
+        </h3>
+        <p>
+          {{ item.date | date:'shortDate':'':'pt-BR' }}
+          <span *ngIf="item.recurrence"> • {{ item.recurrence }}</span>
+          <span *ngIf="item.location"> • {{ item.location }}</span>
+        </p>
+        <p *ngIf="item.notes">{{ item.notes }}</p>
+        <p *ngIf="item.reminderEnabled && item.nextDate">
+          Lembrete para {{ item.nextDate | date:'shortDate':'':'pt-BR' }}
+        </p>
+      </ion-label>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="editarDespesa(item)">
+          <ion-icon name="create" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" color="danger" (click)="removerDespesa(item)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-item>
+  </ion-list>
+
+  <ion-item *ngIf="showHistory && !history.length">
+    <ion-label>Nenhuma despesa registrada ainda.</ion-label>
+  </ion-item>
+</ion-content>

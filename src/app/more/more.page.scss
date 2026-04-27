@@ -1,0 +1,67 @@
+ion-list-header {
+  font-weight: 600;
+}
+
+.menu-item-config .icone-config-menu {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  color: var(--ion-color-primary);
+  font-size: 1.4rem;
+}
+
+.menu-item-despesas .icone-despesa-menu {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #eb445a;
+  color: #fff;
+  font-size: 1.4rem;
+}
+
+.menu-item-receitas .icone-receita-menu {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1f7a3a;
+  color: #fff;
+  font-size: 1.4rem;
+}
+
+.more-menu-card {
+  margin: 16px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: none;
+  border: 1px solid var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
+
+  ion-item {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+    --min-height: 60px;
+
+    .chevron-custom {
+      color: var(--ion-color-primary);
+      font-size: 1.2rem;
+    }
+  }
+
+  .custom-divider {
+    height: 1px;
+    background: var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
+    margin: 0;
+    width: 100%;
+  }
+}

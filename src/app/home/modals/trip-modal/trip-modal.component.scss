@@ -1,0 +1,32 @@
+/* Campos obrigatórios em erro (veículo, data, distância, preço combustível, média do veículo) – só fundo vermelho */
+.required-field {
+  --background: rgba(255, 200, 200, 0.35) !important;
+  --background-focused: rgba(255, 200, 200, 0.5) !important;
+  --background-hover: rgba(255, 200, 200, 0.45) !important;
+  --highlight-color-focused: var(--ion-color-danger);
+  --highlight-color-invalid: var(--ion-color-danger);
+  --highlight-background: rgba(var(--ion-color-danger-rgb), 0.08);
+}
+
+.required-field::part(native) {
+  background: rgba(255, 200, 200, 0.35) !important;
+  border-radius: 16px;
+}
+
+.required-field.ion-invalid {
+  --highlight-background: rgba(var(--ion-color-danger-rgb), 0.12);
+}
+
+.validation-card {
+  border-left: 4px solid var(--ion-color-danger);
+}
+
+.trip-cost-label {
+  color: #ff0000;
+}
+
+.trip-cost-value {
+  color: #ff0000;
+  font-size: 20px;
+  font-weight: bold;
+}

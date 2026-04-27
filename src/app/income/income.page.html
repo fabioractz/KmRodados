@@ -1,0 +1,189 @@
+<ion-header [translucent]="true" mode="ios">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/more" text="Voltar"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Receitas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense" mode="ios">
+    <ion-toolbar>
+      <ion-title size="large">Receitas</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  
+  <div class="ion-padding">
+    <ion-card *ngIf="hasValidationErrors" class="validation-card">
+    <ion-card-content>
+      <p><strong>Campos obrigatórios não preenchidos:</strong></p>
+      <ul>
+        <li *ngFor="let field of missingFields">{{ field }}</li>
+      </ul>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- 1. Veículo -->
+  <ion-item [class.required-field]="vehicleError">
+    <ion-select [(ngModel)]="selectedVehiclePlate" (ionChange)="onVehicleChange()" label="Escolha o Veículo *" label-placement="floating" placeholder="Selecione">
+      <ion-select-option *ngFor="let v of vehicles" [value]="v.plate">
+        {{ v.model }} ({{ v.plate | uppercase }})
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <!-- 2. Tipo de Receita -->
+  <ion-item [class.required-field]="incomeTypeError">
+    <ion-select [(ngModel)]="incomeType" (ionChange)="onIncomeTypeChange()" label="Tipo de Receita *" label-placement="floating" interface="popover" placeholder="Selecione">
+      <ion-select-option *ngFor="let tipo of incomeTypes" [value]="tipo">
+        {{ tipo }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <!-- 3. Valor da Receita -->
+  <ion-item [class.required-field]="amountError">
+    <ion-input
+      type="tel"
+      inputmode="decimal"
+      label="Valor da Receita *"
+      label-placement="floating"
+      placeholder="R$ 0,00"
+      [(ngModel)]="amountStr"
+      (ionInput)="formatAmount($event)">
+    </ion-input>
+  </ion-item>
+
+  <!-- Botão Mostrar mais/menos -->
+  <div class="ion-text-start ion-margin-vertical ion-padding-start">
+    <span 
+      (click)="mostrarMaisCampos = !mostrarMaisCampos" 
+      style="color: var(--ion-color-primary); cursor: pointer; text-decoration: underline;">
+      {{ mostrarMaisCampos ? '- Mostrar menos' : '+ Mostrar mais' }}
+    </span>
+  </div>
+
+  <!-- Campos Secundários -->
+  <div *ngIf="mostrarMaisCampos">
+    <!-- Data e Hora -->
+    <ion-grid>
+      <ion-row>
+        <ion-col size="7">
+          <ion-item class="datetime-item">
+            <ion-label position="fixed">Data *</ion-label>
+            <ion-datetime-button datetime="income-date" slot="end"></ion-datetime-button>
+          </ion-item>
+        </ion-col>
+        <ion-col size="5">
+          <ion-item class="datetime-item">
+            <ion-label position="fixed">Hora</ion-label>
+            <ion-datetime-button datetime="income-hora" slot="end"></ion-datetime-button>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime
+          id="income-date"
+          presentation="date"
+          locale="pt-BR"
+          [formatOptions]="opcoesFormatoData"
+          [(ngModel)]="incomeDate">
+        </ion-datetime>
+      </ng-template>
+    </ion-modal>
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime
+          id="income-hora"
+          presentation="time"
+          locale="pt-BR"
+          [(ngModel)]="horaReceita">
+        </ion-datetime>
+      </ng-template>
+    </ion-modal>
+
+    <!-- Recorrência e Lembretes -->
+    <ion-item>
+      <ion-select [(ngModel)]="recurrence" (ionChange)="onRecurrenceChange()" label="Recorrente" label-placement="floating" interface="popover">
+        <ion-select-option *ngFor="let r of recurrenceOptions" [value]="r">
+          {{ r }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item lines="none" *ngIf="recurrence !== 'Única'">
+      <ion-toggle slot="start" [(ngModel)]="reminderEnabled">
+        Lembrete
+      </ion-toggle>
+    </ion-item>
+
+    <ion-item *ngIf="recurrence !== 'Única' && reminderEnabled">
+      <ion-select [(ngModel)]="reminderTime" label="Lembrar" label-placement="floating" interface="popover">
+        <ion-select-option *ngFor="let opt of reminderOptions" [value]="opt">
+          {{ opt }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Observações -->
+    <ion-item>
+      <ion-textarea
+        label="Observações"
+        label-placement="floating"
+        auto-grow="true"
+        [(ngModel)]="notes">
+      </ion-textarea>
+    </ion-item>
+  </div>
+
+  <ion-button expand="block" class="ion-margin-top" (click)="salvar()">
+    Salvar
+  </ion-button>
+  </div>
+
+  <ion-item *ngIf="showHistory">
+    <ion-label>
+      Total de Receitas: {{ totalIncome | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+    </ion-label>
+  </ion-item>
+
+  <ion-list *ngIf="showHistory && history.length">
+    <ion-list-header>
+      <ion-label>Histórico de Receitas</ion-label>
+    </ion-list-header>
+
+    <ion-item *ngFor="let item of history">
+      <ion-label>
+        <h3>
+          {{ item.type }}
+          <span>
+            - {{ item.amount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+          </span>
+        </h3>
+        <p>
+          {{ item.date | date:'shortDate':'':'pt-BR' }}
+          <span *ngIf="item.recurrence"> • {{ item.recurrence }}</span>
+        </p>
+        <p *ngIf="item.notes">{{ item.notes }}</p>
+        <p *ngIf="item.reminderEnabled && item.nextDate">
+          Lembrete para {{ item.nextDate | date:'shortDate':'':'pt-BR' }}
+        </p>
+      </ion-label>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="editarReceita(item)">
+          <ion-icon name="create" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" color="danger" (click)="removerReceita(item)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-item>
+  </ion-list>
+
+  <ion-item *ngIf="showHistory && !history.length">
+    <ion-label>Nenhuma receita registrada ainda.</ion-label>
+  </ion-item>
+</ion-content>
