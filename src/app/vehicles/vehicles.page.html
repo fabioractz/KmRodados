@@ -1,11 +1,11 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" mode="ios">
   <ion-toolbar>
     <ion-title>Veículos</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
+  <ion-header collapse="condense" mode="ios">
     <ion-toolbar>
       <ion-title size="large">Veículos</ion-title>
     </ion-toolbar>
@@ -85,12 +85,18 @@
                     (click)="$event.stopPropagation(); ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
                   {{ vehicle.odometer != null ? (vehicle.odometer | number) + ' km' : '-' }}
                 </p>
-                <p><strong>Consumo (Inicial):</strong> {{ vehicle.consumption != null ? (vehicle.consumption | number:'1.2-2') + ' km/L' : '-' }}</p>
                 <p><strong>Observações:</strong> {{ vehicle.observations ? vehicle.observations : '-' }}</p>
               </div>
             </div>
           </div>
-          <p *ngIf="vehicle.observations"><strong>Obs:</strong> {{ vehicle.observations }}</p>
+          <div class="vehicle-totals">
+            <span class="income-total">
+              Receitas: {{ getTotalIncomes(vehicle) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+            </span>
+            <span class="expense-total">
+              Despesas: {{ getTotalExpenses(vehicle) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+            </span>
+          </div>
         </ion-card-content>
       </ion-card>
     </div>

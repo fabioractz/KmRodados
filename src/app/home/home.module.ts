@@ -6,6 +6,7 @@ import { HomePage } from './home.page';
 import { SupplyModalComponent } from './modals/supply-modal/supply-modal.component';
 import { ConsumptionModalComponent } from './modals/consumption-modal/consumption-modal.component';
 import { MaintenanceModalComponent } from './modals/maintenance-modal/maintenance-modal.component';
+import { TripModalComponent } from './modals/trip-modal/trip-modal.component';
 
 import { HomePageRoutingModule } from './home-routing.module';
 import { BaseChartDirective } from 'ng2-charts';
@@ -23,7 +24,8 @@ import { BaseChartDirective } from 'ng2-charts';
     HomePage,
     SupplyModalComponent,
     ConsumptionModalComponent,
-    MaintenanceModalComponent
+    MaintenanceModalComponent,
+    TripModalComponent
   ]
 })
 export class HomePageModule {}

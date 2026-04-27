@@ -44,6 +44,10 @@
 ### Versão unificada (web, Android, iOS)
 
 - A versão é definida em `package.json` no campo `"version"`.
+- Ao aumentar a versão, atualize também `version` em:
+  - `src/environments/environment.ts`
+  - `src/environments/environment.prod.ts`
+  (assim a tela **Configurações → Sobre → Versão do App** exibe a versão correta na web e como fallback no app.)
 - `npm run version:sync` é chamado automaticamente pelos comandos `release:*` e atualiza:
   - `versionCode` / `versionName` no Android
   - `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` no iOS

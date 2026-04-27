@@ -1,4 +1,16 @@
- .lista-posto-autocomplete {
+ /* Ajuste específico para o Título Grande no Modal */
+ion-header[collapse="condense"] ion-title {
+  --padding-start: 0; /* Remove qualquer padding para alinhar com a borda do input */
+  font-size: 24px !important;
+  padding-bottom: 20px; /* Reduzido para aproximar mais dos campos */
+}
+
+/* Garante que o conteúdo não fique colado */
+ion-content {
+  --padding-top: 16px;
+}
+
+.lista-posto-autocomplete {
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 8px;
   margin-top: 4px;
@@ -62,4 +74,137 @@
   font-size: 12px;
   color: var(--ion-color-medium, #808080);
   margin-top: 2px;
+}
+
+
+.odometer-item {
+  --background: var(--ion-color-step-50, #ffffff);
+  border-radius: 16px;
+  margin-bottom: 16px;
+  
+  /* Ajuste para o input ficar mais destacado */
+  ion-input {
+    /* font-size removido para ficar padrão */
+    /* font-weight removido para não ficar negrito */
+  }
+}
+
+ion-item.required-field {
+  --background: rgba(255, 200, 200, 0.3) !important;
+  --background-focused: rgba(255, 200, 200, 0.5) !important;
+  --background-hover: rgba(255, 200, 200, 0.4) !important;
+  border: 1px solid rgba(255, 150, 150, 0.8) !important;
+  /* border-radius and margin are now handled by the general rule, but we keep them here to be safe or override if needed */
+}
+
+/* New styles for rounded and spaced fields */
+ion-item:not(.item-zebrado) {
+  --border-radius: 16px;
+  border-radius: 16px;
+  --border-width: 0;
+  border: 1px solid var(--ion-color-step-150, #d7d8da);
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --background: var(--ion-color-step-50, #ffffff);
+  overflow: hidden; /* Garante que o conteúdo respeite o border-radius */
+}
+
+/* Remove default highlight (bottom line on focus) to keep the rounded box look */
+ion-item::part(native) {
+  border-radius: 16px;
+  border-bottom-width: 0;
+}
+
+/* Adjustments for the autocomplete list to revert to standard list style if needed, 
+   or keep them rounded but with less margin */
+.lista-posto-autocomplete ion-item {
+  margin-bottom: 0;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  --border-radius: 0;
+  --background: transparent;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.lista-posto-autocomplete ion-item::part(native) {
+  border-radius: 0;
+}
+
+.lista-posto-autocomplete {
+  margin-bottom: 16px; /* Space after the list */
+}
+
+/* Specific adjustment for grid columns to ensure spacing */
+ion-grid {
+  padding: 0;
+}
+
+ion-col {
+  padding-bottom: 0;
+}
+
+/* Reduced horizontal padding for numeric fields in grid (Price, Value, Liters) */
+ion-grid ion-item {
+  --padding-start: 8px;
+  --inner-padding-end: 8px;
+}
+
+.validation-card {
+  margin-bottom: 16px;
+  background: rgba(255, 200, 200, 0.3);
+  border: 1px solid rgba(255, 150, 150, 0.6);
+}
+
+.validation-card ion-card-content {
+  padding: 12px 16px;
+}
+
+.validation-card p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.validation-card ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.validation-card li {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.linha-data-hora {
+  display: flex;
+  align-items: center;
+  column-gap: 12px;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.container-data,
+.container-hora {
+  display: inline-flex;
+  align-items: center;
+  column-gap: 6px;
+  white-space: nowrap;
+}
+
+.date-inline-button,
+.time-inline-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --min-width: auto;
+}
+
+/* Ensure datetime label and button don't overlap */
+ion-item.datetime-item ion-label {
+  flex: 0 0 auto;
+  margin-right: 8px;
+  max-width: 40%;
+}
+
+ion-item.datetime-item ion-datetime-button {
+  margin-left: auto;
 }

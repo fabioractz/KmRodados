@@ -2,6 +2,94 @@ ion-card {
   border-radius: 18px;
 }
 
+/* New styles for rounded and spaced fields */
 ion-item {
+  --border-radius: 16px;
+  border-radius: 16px;
+  --border-width: 0;
+  border: 1px solid var(--ion-color-step-150, #d7d8da);
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --background: var(--ion-color-step-50, #ffffff);
+  overflow: hidden;
   --inner-padding-end: 8px;
+}
+
+/* Remove default highlight (bottom line on focus) to keep the rounded box look */
+ion-item::part(native) {
+  border-radius: 16px;
+  border-bottom-width: 0;
+}
+
+/* Remove spin buttons from number inputs */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+ion-item.required-field {
+  --background: rgba(255, 200, 200, 0.3) !important;
+  --background-focused: rgba(255, 200, 200, 0.5) !important;
+  --background-hover: rgba(255, 200, 200, 0.4) !important;
+  border: 1px solid rgba(255, 150, 150, 0.8) !important;
+}
+
+.validation-card {
+  margin-bottom: 16px;
+  background: rgba(255, 200, 200, 0.3);
+  border: 1px solid rgba(255, 150, 150, 0.6);
+}
+
+.validation-card ion-card-content {
+  padding: 12px 16px;
+}
+
+.validation-card p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.item-tipo-veiculo {
+  display: flex;
+  align-items: center;
+}
+
+.label-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.label-container ion-label {
+  font-size: 12px;
+  color: var(--ion-color-step-600, #666);
+  margin-bottom: 4px;
+}
+
+.label-container ion-text {
+  font-size: 16px;
+  color: var(--ion-text-color, #000);
+}
+
+.validation-card ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.validation-card li {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.odometer-item {
+  /* Ajuste para o input ficar mais destacado */
+  ion-input {
+    /* font-weight: 500; removido */
+  }
 }

@@ -1,13 +1,18 @@
-<ion-header>
+<ion-header [translucent]="true" mode="ios">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/home"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/home" text="Voltar"></ion-back-button>
     </ion-buttons>
     <ion-title>Histórico de Consumo</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense" mode="ios">
+    <ion-toolbar>
+      <ion-title size="large">Histórico de Consumo</ion-title>
+    </ion-toolbar>
+  </ion-header>
   <div *ngIf="records.length === 0" class="ion-padding ion-text-center">
     <p>Nenhum registro de consumo encontrado.</p>
   </div>
@@ -22,6 +27,14 @@
           {{ record.distance }} km / {{ record.liters }} L
         </p>
       </ion-label>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="editarConsumo(record)">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" color="danger" (click)="removerConsumo(record)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
     </ion-item>
   </ion-list>
 </ion-content>

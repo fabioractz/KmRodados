@@ -59,6 +59,20 @@ export class VehiclesPage implements OnInit {
     });
   }
 
+  getTotalExpenses(vehicle: Vehicle): number {
+    if (!vehicle.otherExpenses || vehicle.otherExpenses.length === 0) {
+      return 0;
+    }
+    return vehicle.otherExpenses.reduce((sum, e) => sum + (e.cost || 0), 0);
+  }
+
+  getTotalIncomes(vehicle: Vehicle): number {
+    if (!vehicle.incomes || vehicle.incomes.length === 0) {
+      return 0;
+    }
+    return vehicle.incomes.reduce((sum, i) => sum + (i.amount || 0), 0);
+  }
+
   getVehicleTypeName(type: string) {
     return this.vehicleService.getVehicleTypeName(type);
   }

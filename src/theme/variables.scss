@@ -76,8 +76,8 @@ body.dark {
 /* Explicit light theme override (forces app claro mesmo com iOS em modo escuro) */
 body.light {
   color-scheme: light;
-  --ion-background-color: #ffffff;
-  --ion-background-color-rgb: 255,255,255;
+  --ion-background-color: #F2F2F7;
+  --ion-background-color-rgb: 242,242,247;
   --ion-text-color: #000000;
   --ion-text-color-rgb: 0,0,0;
 

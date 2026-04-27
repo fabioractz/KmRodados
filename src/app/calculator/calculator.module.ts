@@ -1,5 +1,5 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule, UpperCasePipe, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
@@ -11,8 +11,12 @@ import { CalculatorPage } from './calculator.page';
     CommonModule,
     FormsModule,
     IonicModule,
+    UpperCasePipe,
+    CurrencyPipe,
+    DecimalPipe,
     CalculatorPageRoutingModule
   ],
-  declarations: [CalculatorPage]
+  declarations: [CalculatorPage],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class CalculatorPageModule {}

@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController, AlertController, ToastController } from '@ionic/angular';
 import { VehicleService, Vehicle, Maintenance } from '../../../services/vehicle.service';
+import { ServicoAjudaOdometro } from '../../../services/ajuda-odometro.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -15,8 +16,10 @@ export class MaintenanceModalComponent implements OnInit {
   @Input() editingVehiclePlate: string | null = null;
 
   maintDate: string = '';
+  maintTime: string = '';
   maintVehicle: string = '';
   maintOdometer: number | null = null;
+  maintOdometerStr: string = '';
   maintSummary: string = '';
   maintParts: string = '';
   maintPartsValue: number | null = null;
@@ -27,13 +30,26 @@ export class MaintenanceModalComponent implements OnInit {
   maintTotalValueStr: string = '';
   
   isEditing: boolean = false;
+  vehicleError: boolean = false;
+  dateError: boolean = false;
+  odometerError: boolean = false;
+  summaryError: boolean = false;
+  totalValueError: boolean = false;
+
+  mostrarMaisCampos: boolean = false;
+
+  /** Formato DD/MM/YYYY na exibição do botão de data */
+  readonly opcoesFormatoData: { date: Intl.DateTimeFormatOptions } = {
+    date: { day: '2-digit', month: '2-digit', year: 'numeric' }
+  };
 
   constructor(
     private modalCtrl: ModalController,
     private vehicleService: VehicleService,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
-    private router: Router
+    private router: Router,
+    public ajuda_odometro: ServicoAjudaOdometro
   ) {}
 
   ngOnInit() {
@@ -58,16 +74,21 @@ export class MaintenanceModalComponent implements OnInit {
   initDate() {
     const today = new Date();
     const offset = today.getTimezoneOffset() * 60000;
-    this.maintDate = new Date(today.getTime() - offset).toISOString();
+    const localISO = new Date(today.getTime() - offset).toISOString();
+    this.maintDate = localISO;
+    this.maintTime = localISO;
   }
 
   loadMaintenance(maint: Maintenance) {
       this.maintVehicle = this.editingVehiclePlate!;
       const d = new Date(maint.date);
       const offset = d.getTimezoneOffset() * 60000;
-      this.maintDate = new Date(d.getTime() - offset).toISOString();
+      const isoLocal = new Date(d.getTime() - offset).toISOString();
+      this.maintDate = isoLocal;
+      this.maintTime = isoLocal;
       
       this.maintOdometer = maint.odometer;
+      this.maintOdometerStr = new Intl.NumberFormat('pt-BR').format(maint.odometer);
       this.maintSummary = maint.summary;
       this.maintParts = maint.parts || '';
       
@@ -104,37 +125,122 @@ export class MaintenanceModalComponent implements OnInit {
     this.updateMaintenanceTotal();
   }
 
+  get missingFields(): string[] {
+    const fields: string[] = [];
+    if (!this.maintVehicle) {
+      fields.push('Veículo');
+    }
+    if (!this.maintDate) {
+      fields.push('Data');
+    }
+    if (!this.maintSummary) {
+      fields.push('Resumo do Serviço');
+    }
+    if (!this.maintTotalValue) {
+      fields.push('Valor Total');
+    }
+    return fields;
+  }
+
+  get hasValidationErrors(): boolean {
+    return this.vehicleError || this.dateError || this.summaryError || this.totalValueError;
+  }
+
   updateMaintenanceTotal() {
     const parts = this.maintPartsValue || 0;
     const service = this.maintServiceValue || 0;
+    
+    // Só calcula automaticamente se o usuário não editou manualmente o total
+    // OU se a soma das partes for maior que o total atual (assumindo que ele quer atualizar)
+    // Para simplificar e atender ao pedido: vamos somar, mas permitir edição posterior.
+    // O pedido diz: "não obrigue o campo a somente receber o valor calculado"
+    // Então, ao alterar peças/mão de obra, podemos sugerir o total, mas o campo total deve ser editável.
+    
+    // Nova lógica: Se alterar peças ou mão de obra, atualiza o total SOMANDO eles.
     this.maintTotalValue = parts + service;
     this.maintTotalValueStr = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(this.maintTotalValue);
+    this.totalValueError = false;
+  }
+
+  aoDigitarValorTotal(event: any) {
+    let value = event.target.value;
+    value = value.replace(/\D/g, '');
+    if (value === '') {
+      this.maintTotalValueStr = '';
+      this.maintTotalValue = null;
+      return;
+    }
+    const numericValue = parseInt(value, 10) / 100;
+    this.maintTotalValue = numericValue;
+    this.maintTotalValueStr = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(numericValue);
+    this.totalValueError = false;
+  }
+
+  formatOdometer(event: any) {
+    let value = event.target.value;
+    const numericString = value.replace(/\D/g, '');
+    if (numericString === '') {
+      this.maintOdometerStr = '';
+      this.maintOdometer = null;
+      return;
+    }
+    const numericValue = parseInt(numericString, 10);
+    this.maintOdometer = numericValue;
+    this.maintOdometerStr = new Intl.NumberFormat('pt-BR').format(numericValue);
   }
 
   async save() {
-    if (!this.maintVehicle || !this.maintDate || !this.maintOdometer || !this.maintSummary || !this.maintTotalValue) {
-      const alert = await this.alertCtrl.create({
-        header: 'Atenção',
-        message: 'Preencha os campos obrigatórios (Veículo, Data, Odômetro, Resumo e Valores).',
-        buttons: ['OK']
-      });
-      await alert.present();
+    // Resetar erros
+    this.vehicleError = false;
+    this.dateError = false;
+    this.odometerError = false;
+    this.summaryError = false;
+    this.totalValueError = false;
+
+    let hasError = false;
+
+    if (!this.maintVehicle) {
+      this.vehicleError = true;
+      hasError = true;
+    }
+    if (!this.maintDate) {
+      this.dateError = true;
+      hasError = true;
+    }
+    // Odômetro não é mais obrigatório
+    // if (!this.maintOdometer) {
+    //   this.odometerError = true;
+    //   hasError = true;
+    // }
+    if (!this.maintSummary) {
+      this.summaryError = true;
+      hasError = true;
+    }
+    if (!this.maintTotalValue) {
+      this.totalValueError = true;
+      hasError = true;
+    }
+
+    if (hasError) {
       return;
     }
 
-    const datePart = this.maintDate.split('T')[0];
+    const origemDataHora = this.maintTime || this.maintDate;
+    const [datePart, timePartRaw] = origemDataHora.split('T');
     const [year, month, day] = datePart.split('-').map(Number);
-    const localDate = new Date(year, month - 1, day);
+    const timePart = (timePartRaw || '').split('.')[0] || '00:00:00';
+    const [hour, minute, second] = timePart.split(':').map(Number);
+    const localDate = new Date(year, month - 1, day, hour || 0, minute || 0, second || 0);
 
     const newMaintenance: Maintenance = {
       id: this.isEditing ? this.editingMaintenance!.id : undefined,
       date: localDate,
-      odometer: this.maintOdometer,
+      odometer: this.maintOdometer || 0, // Envia 0 ou valor presente
       summary: this.maintSummary,
       parts: this.maintParts,
       partsValue: this.maintPartsValue || 0,
       serviceValue: this.maintServiceValue || 0,
-      totalValue: this.maintTotalValue
+      totalValue: this.maintTotalValue!
     };
 
     if (this.isEditing) {

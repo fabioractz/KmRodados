@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { addIcons } from 'ionicons';
-import { home, speedometer, car, settings } from 'ionicons/icons';
+import { home, speedometer, car, settings, ellipsisHorizontal } from 'ionicons/icons';
 
 @Component({
   selector: 'app-tabs',
@@ -11,7 +11,7 @@ import { home, speedometer, car, settings } from 'ionicons/icons';
 export class TabsPage {
 
   constructor() {
-    addIcons({ home, speedometer, car, settings });
+    addIcons({ home, speedometer, car, settings, ellipsisHorizontal });
   }
 
 }

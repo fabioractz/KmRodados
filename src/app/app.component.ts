@@ -42,7 +42,7 @@ export class AppComponent {
       const corpo_escuro = document.body.classList.contains('dark');
 
       if (plataforma === 'android') {
-        await StatusBar.setOverlaysWebView({ overlay: false });
+        await StatusBar.setOverlaysWebView({ overlay: true });
         await StatusBar.setStyle({ style: corpo_escuro ? Style.Dark : Style.Light });
       } else if (plataforma === 'ios') {
         await StatusBar.setOverlaysWebView({ overlay: true });

@@ -1,115 +1,303 @@
-.calculator-container {
-  /* Use Ionic background variable for adaptability */
-  background: var(--ion-color-step-50, #f4f5f8);
-  /* Dark mode override handled by Ionic automatically if we use steps/backgrounds correctly. 
-     But for a specific card-like look: */
-  background: var(--ion-card-background, #fff);
-  
-  /* Let's use a subtle gradient based on the background color to keep it modern */
-  background: linear-gradient(145deg, var(--ion-color-step-100, #e6e6e6), var(--ion-color-step-50, #ffffff));
-  
-  /* For dark mode, Ionic swaps step-100 and step-50 to be dark grays. */
-  
-  padding: 15px; /* Reduced padding */
-  border-radius: 20px; /* Smaller radius */
-  box-shadow: 
-    0 5px 15px rgba(0,0,0,0.1),
-    inset 0 1px 1px rgba(255,255,255,0.4);
-    
-  max-width: 280px; /* Reduced width (was 360px) */
-  margin: 20px auto;
-  border: 1px solid var(--ion-color-step-150, rgba(0,0,0,0.05));
+/* Ajuste específico para o Título Grande */
+ion-header[collapse="condense"] ion-toolbar {
+  --min-height: 0px;
+  padding-bottom: 0px;
 }
 
-/* Dark mode specific override if needed, but using steps usually works. 
-   However, let's ensure the gradient looks "premium" in both. */
-@media (prefers-color-scheme: dark) {
-  .calculator-container {
-    background: linear-gradient(145deg, #2b2d31, #1e2023); /* Keep the nice dark one for dark mode users */
-    box-shadow: 
-      0 10px 20px rgba(0,0,0,0.4),
-      inset 0 1px 1px rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.05);
+ion-header[collapse="condense"] ion-title {
+  --padding-start: 0; /* Remove qualquer padding para alinhar com a borda do input */
+  font-size: 24px !important;
+  padding-bottom: 5px; /* Espaço inferior consistente */
+}
+
+/* Garante que o conteúdo não fique colado */
+ion-content {
+  --padding-top: 16px;
+}
+
+/* Oculta a barra de rolagem mantendo a funcionalidade */
+ion-content::part(scroll) {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+ion-content::part(scroll)::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Remove padding when calculator is shown */
+.no-padding-calc {
+  padding: 0 !important;
+}
+
+/* iOS Calculator Style - Adaptive Theme */
+.ios-calculator-wrapper {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  min-height: calc(100vh - 140px);
+  padding-top: 0;
+  margin: 0;
+  background: var(--ion-background-color);
+  position: relative;
+  width: 100%;
+}
+
+/* Make the content background match theme when calculator is shown */
+:host ::ng-deep ion-content.ios-calculator-content {
+  --background: var(--ion-background-color);
+  --padding-top: 0px !important;
+}
+
+:host ::ng-deep ion-content.ios-calculator-content .inner-scroll {
+  background: var(--ion-background-color);
+}
+
+.ios-calculator-container {
+  width: 100%;
+  max-width: 400px;
+  background: var(--ion-background-color);
+  padding: 0;
+  margin: 0 auto;
+}
+
+.ios-calc-display {
+  color: var(--ion-text-color);
+  font-size: clamp(4.0rem, 13vw, 7.0rem); /* Aumentado levemente */
+  font-weight: 300;
+  text-align: right;
+  padding: 5px 20px 0px 20px; /* Adicionado padding superior leve */
+  overflow-x: auto;
+  white-space: nowrap;
+  min-height: 100px; /* Aumentado altura mínima levemente */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  background: var(--ion-background-color);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing: -0.02em;
+  word-break: break-all;
+  
+  /* Ocultar scrollbar horizontal se houver */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  /* Feedback visual ao clicar */
+  &:active {
+    opacity: 0.7;
   }
 }
 
-/* To support Ionic's class-based dark mode toggling (if implemented via .dark class on body) */
-:host-context(body.dark) .calculator-container {
-  background: linear-gradient(145deg, #2b2d31, #1e2023);
-  box-shadow: 
-    0 10px 20px rgba(0,0,0,0.4),
-    inset 0 1px 1px rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.05);
+.ios-calc-display::-webkit-scrollbar {
+  display: none;
 }
 
-
-.calc-display {
-  background: var(--ion-color-step-100, rgba(0,0,0,0.05));
-  color: var(--ion-text-color, #000);
-  font-size: 2.5rem; /* Reduced font size */
-  font-weight: 300;
-  text-align: right;
-  padding: 15px 20px; /* Reduced padding */
-  border-radius: 12px; /* Smaller radius */
-  margin-bottom: 20px;
-  overflow-x: auto;
-  white-space: nowrap;
-  box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+/* Responsive adjustments for display */
+@media (max-width: 400px) {
+  .ios-calc-display {
+    font-size: clamp(3.5rem, 11vw, 5.5rem); /* Aumentado levemente no mobile */
+    padding: 5px 15px 0px 15px;
+  }
   
-  /* Add subtle border for definition */
-  border: 1px solid var(--ion-color-step-200, rgba(0,0,0,0.05));
+  .ios-calc-grid {
+    gap: 10px;
+    padding: 0 10px 15px 10px;
+  }
+  
+  .ios-btn {
+    font-size: 1.6rem;
+  }
+  
+  .ios-btn-operator {
+    font-size: 1.8rem;
+  }
+  
+  .ios-btn-function {
+    font-size: 1.3rem;
+  }
 }
 
-.calc-grid {
+.ios-calc-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px; /* Reduced gap */
+  gap: 12px;
+  padding: 0 12px 20px 12px;
 }
 
-/* Base button styles */
-.calc-grid ion-button {
-  --border-radius: 12px; /* Smaller radius */
-  height: 50px; /* Fixed height for smaller buttons */
+/* Base button styles - iOS circular buttons */
+.ios-btn {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: #ffffff;
+  /* Default background fallback */
+  background: var(--ion-color-step-600, #505050); 
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
   margin: 0;
-  font-size: 1.2rem; /* Adjusted font size */
-  font-weight: 500;
-  --box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  transition: transform 0.1s;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  position: relative;
 }
 
-.calc-grid ion-button:active {
+.ios-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.ios-btn:active::before {
+  opacity: 0.15;
+}
+
+.ios-btn:active {
   transform: scale(0.95);
 }
 
-/* Number buttons */
-.calc-grid ion-button[color="light"] {
-  --background: var(--ion-color-step-50, #fff);
-  --color: var(--ion-text-color, #333);
-  --background-activated: var(--ion-color-step-150, #f0f0f0);
+/* 
+   Number buttons 
+   Light: Light Gray (#e5e5ea -> step-100/150)
+   Dark: Dark Gray (#333333 -> step-200)
+*/
+.ios-btn-number {
+  background: var(--ion-color-step-150, #e5e5ea);
+  color: var(--ion-text-color, #000000);
 }
 
-/* Operator buttons (+, -, *, /) */
-.calc-grid ion-button[color="primary"] {
-  --background: var(--ion-color-primary);
-  --color: var(--ion-color-primary-contrast);
-  font-weight: 600;
+.ios-btn-number:active {
+  filter: brightness(0.9);
 }
 
-/* Equals button */
-.calc-grid ion-button[color="primary"]:last-child {
-  --background: var(--ion-color-success); /* Use success color for equals */
+@media (prefers-color-scheme: dark) {
+  .ios-btn-number {
+    background: var(--ion-color-step-200, #333333);
+    color: var(--ion-text-color, #ffffff);
+  }
+  
+  .ios-btn-number:active {
+    filter: brightness(1.5);
+  }
 }
 
-/* Clear/Special buttons */
-.calc-grid ion-button[fill="outline"] {
-  --border-color: var(--ion-color-medium);
-  --color: var(--ion-color-medium);
-  --border-width: 1px;
+body.dark .ios-btn-number {
+  background: var(--ion-color-step-200, #333333);
+  color: var(--ion-text-color, #ffffff);
 }
 
-.double-col {
-  grid-column: span 2;
+/* 
+   Function buttons (AC, %, backspace, +/-)
+   Light: Gray (#d1d1d6 -> step-250)
+   Dark: Light Gray (#a6a6a6 -> step-650)
+*/
+.ios-btn-function {
+  background: var(--ion-color-step-250, #d1d1d6);
+  color: #000000; /* Always black text for light gray buttons */
+  font-size: 1.8rem; /* Aumentado de 1.5rem */
+  font-weight: 500;
 }
+
+.ios-btn-function:active {
+  filter: brightness(0.9);
+}
+
+@media (prefers-color-scheme: dark) {
+  .ios-btn-function {
+    background: var(--ion-color-step-650, #a6a6a6);
+    color: #000000;
+  }
+  
+  .ios-btn-function:active {
+    filter: brightness(1.1);
+  }
+}
+
+body.dark .ios-btn-function {
+  background: var(--ion-color-step-650, #a6a6a6);
+  color: #000000;
+}
+
+/* Backspace, AC e %: cor do tema no background, mais opaca */
+.ios-btn-function-tema {
+  background: var(--ion-color-primary, #428cff) !important;
+  color: var(--ion-color-primary-contrast, #ffffff) !important;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Overlay branco para criar efeito de cor mais opaca (menos saturada) */
+.ios-btn-function-tema::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 1; /* Override default button opacity behavior for this specific overlay */
+}
+
+.ios-btn-function-tema:active::before {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.ios-btn-function-tema ion-icon,
+.ios-btn-function-tema {
+  position: relative;
+  z-index: 1;
+}
+
+.ios-btn-function-tema ion-icon {
+  color: var(--ion-color-primary-contrast, #ffffff);
+  opacity: 1;
+}
+
+/* Garantir que o backspace apareça sólido e branco */
+.ios-btn-function-tema ion-icon[name="backspace-outline"] {
+  color: var(--ion-color-primary-contrast, #ffffff);
+  opacity: 1;
+  filter: drop-shadow(0 0 0.5px currentColor);
+}
+
+.ios-btn-function ion-icon {
+  font-size: 2.2rem; /* Aumentado de 1.8rem */
+  color: currentColor;
+  width: 32px; /* Aumentado de 24px */
+  height: 32px; /* Aumentado de 24px */
+  display: block;
+}
+
+/* Backspace mesmo tamanho dos outros ícones */
+.ios-btn-function ion-icon[name="backspace-outline"] {
+  font-size: 2.2rem; /* Aumentado de 1.8rem */
+  width: 34px; /* Aumentado de 28px */
+  height: 34px; /* Aumentado de 28px */
+}
+
+/* Operator buttons - use theme primary color */
+.ios-btn-operator {
+  background: var(--ion-color-primary, #ff9500);
+  color: var(--ion-color-primary-contrast, #ffffff);
+  font-size: 2.6rem; /* Aumentado de 2rem */
+  font-weight: 400;
+}
+
+.ios-btn-operator:active {
+  background: var(--ion-color-primary-shade, #e6850e);
+  opacity: 0.9;
+}
+
 
 /* Menu Styles */
 .menu-container {
@@ -125,8 +313,8 @@
 .menu-button {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   background: var(--ion-card-background, #fff);
   border-radius: 20px;
   padding: 14px 18px;
@@ -143,18 +331,225 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   }
 
-  ion-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
-    margin-right: 0;
+  .menu-icon {
+    font-size: 36px;
+    margin-bottom: 8px;
     color: var(--ion-color-primary);
   }
 
-  label {
+  .menu-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .menu-title {
     font-size: 16px;
-    font-weight: 600;
-    text-align: center;
+    font-weight: 700;
     color: var(--ion-text-color);
     line-height: 1.3;
   }
+
+  .menu-desc {
+    font-size: 13px;
+    color: var(--ion-color-medium);
+    line-height: 1.4;
+  }
+}
+
+.linha-data-hora {
+  display: flex;
+  align-items: center;
+  column-gap: 12px;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.container-data,
+.container-hora {
+  display: inline-flex;
+  align-items: center;
+  column-gap: 6px;
+  white-space: nowrap;
+}
+
+.date-inline-button,
+.time-inline-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+  min-height: 36px;
+  border-radius: 8px;
+  background-color: var(--ion-color-light);
+  color: var(--ion-color-dark);
+  font-weight: 500;
+}
+
+/* =========================================
+   ESTILOS DE CONSUMO (Copiados do Modal)
+   ========================================= */
+
+/* Estilização específica para o card de Odômetro */
+.odometer-card-content {
+  padding: 0 4px 8px; /* Margens laterais (4px) e inferior (8px) do card-content */
+}
+
+/* Ajuste do padding do título do card para alinhar com o padding inferior */
+ion-card-header {
+  padding-top: 12px;
+  padding-bottom: 0;
+}
+
+ion-card-title {
+  margin-top: 0;
+  margin-bottom: 8px; /* Espaço inferior para o conteúdo */
+}
+
+/* Removemos o padding global que estava zerando tudo e definimos para este contexto */
+.odometer-card-content ion-grid {
+  padding: 0;
+}
+
+.odometer-card-content ion-col {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Coluna Inicial: margem esquerda do card, margem direita para separar do outro campo */
+.odometer-card-content .col-inicial {
+  padding-left: 4px;
+  padding-right: 4px; /* Espaço entre campos reduzido */
+}
+
+/* Coluna Final: margem esquerda para separar do outro campo, margem direita do card */
+.odometer-card-content .col-final {
+  padding-left: 4px; /* Espaço entre campos reduzido */
+  padding-right: 4px;
+}
+
+/* Itens de Odômetro (Inicial e Final) */
+.item-odometro {
+  --border-radius: 8px; /* Arredondamento suave */
+  box-shadow: none;
+  margin-bottom: 0;
+  /* Contorno discreto usando variáveis de step para adaptação automática aos temas */
+  border: 1px solid var(--ion-color-step-200, #cccccc);
+  --background: transparent;
+  /* Garante que o item preencha a coluna respeitando o padding da coluna */
+}
+
+/* Coluna de Distância (ocupa toda a largura) */
+.odometer-card-content .col-distancia {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Item de Distância */
+.item-distancia {
+  --border-radius: 8px; /* Arredondamento suave */
+  box-shadow: none;
+  /* Contorno discreto usando variáveis de step para adaptação automática aos temas */
+  border: 1px solid var(--ion-color-step-200, #cccccc);
+  --background: transparent;
+  margin-top: 8px;      /* Espaço acima reduzido */
+  margin-bottom: 4px;   /* Espaço abaixo reduzido */
+  /* Alinhamento exato com os campos superiores:
+     Esquerda: padding-left da col-inicial (4px)
+     Direita: padding-right da col-final (4px)
+  */
+  margin-left: 4px;     
+  margin-right: 4px;    
+}
+
+/* Specific adjustment for grid columns to ensure spacing */
+.odometer-card-content ion-grid ion-item {
+  --padding-start: 8px;
+  --inner-padding-end: 8px;
+}
+
+/* Add spacing between odometer inputs and distance input inside the card */
+.odometer-card-content ion-grid ion-row:last-child ion-col ion-item {
+  margin-top: 12px;
+}
+
+.odometer-item {
+  /* Ajuste para o input ficar mais destacado */
+  ion-input {
+    /* font-weight: 500; removido */
+  }
+}
+
+ion-item.campo-consumo-clicavel {
+  cursor: pointer;
+}
+
+/* New styles for rounded and spaced fields */
+ion-item {
+  --border-radius: 16px;
+  border-radius: 16px;
+  --border-width: 0;
+  border: 1px solid var(--ion-color-step-150, #d7d8da);
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --background: var(--ion-color-step-50, #ffffff);
+  overflow: hidden;
+}
+
+/* Remove default highlight (bottom line on focus) to keep the rounded box look */
+ion-item::part(native) {
+  border-radius: 16px;
+  border-bottom-width: 0;
+}
+
+/* Campos obrigatórios em erro (veículo, distância, preço combustível, média do veículo) – só fundo vermelho */
+ion-item.required-field,
+ion-item.campo-media-viagem.required-field {
+  --background: rgba(255, 200, 200, 0.35) !important;
+  --background-focused: rgba(255, 200, 200, 0.5) !important;
+  --background-hover: rgba(255, 200, 200, 0.45) !important;
+  --highlight-color-focused: var(--ion-color-danger);
+  --highlight-color-invalid: var(--ion-color-danger);
+}
+
+ion-item.required-field::part(native),
+ion-item.campo-media-viagem.required-field::part(native) {
+  background: rgba(255, 200, 200, 0.35) !important;
+  border-radius: 16px;
+}
+
+/* Remove spin buttons from number inputs */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.validation-card {
+  margin-bottom: 16px;
+  background: rgba(255, 200, 200, 0.3);
+  border: 1px solid rgba(255, 150, 150, 0.6);
+}
+
+.validation-card ion-card-content {
+  padding: 12px 16px;
+}
+
+.validation-card p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.validation-card ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.validation-card li {
+  margin: 4px 0;
+  font-size: 14px;
 }

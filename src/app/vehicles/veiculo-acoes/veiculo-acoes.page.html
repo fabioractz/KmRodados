@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header mode="ios">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/vehicles" text="Voltar"></ion-back-button>
@@ -7,51 +7,57 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <div *ngIf="veiculo">
-    <h2>{{ veiculo.model }} <small>({{ veiculo.plate | uppercase }})</small></h2>
-    <p><strong>Tipo:</strong> {{ servicoVeiculo.getVehicleTypeName(veiculo.type) }}</p>
-    <p *ngIf="veiculo.odometer != null">
-      <strong>Odômetro:</strong> {{ veiculo.odometer | number }} km
-    </p>
-  </div>
+<ion-content>
+  <ion-header collapse="condense" mode="ios">
+    <ion-toolbar>
+      <ion-title size="large">Ações do Veículo</ion-title>
+    </ion-toolbar>
+  </ion-header>
 
-  <ion-grid class="ion-margin-top">
-    <ion-row>
-      <ion-col size="6">
-        <ion-button expand="block" color="success" fill="solid" size="default" (click)="abastecer()">
-          <div class="ion-text-center">
-            <ion-icon name="gas-station" style="font-size: 24px; display: block; margin: 0 auto; color: white;"></ion-icon>
-            <span style="font-size: 12px; color: white;">Abastecer</span>
-          </div>
+  <div class="ion-padding">
+    <div *ngIf="veiculo">
+      <div class="cabecalho-veiculo">
+        <div class="dados-veiculo">
+          <h2>{{ veiculo.model }} <small>({{ veiculo.plate | uppercase }})</small></h2>
+          <p><strong>Tipo:</strong> {{ servicoVeiculo.getVehicleTypeName(veiculo.type) }}</p>
+        </div>
+        <ion-button
+          fill="clear"
+          size="small"
+          class="botao-editar-topo"
+          (click)="editarVeiculo()"
+          aria-label="Editar veículo"
+          title="Editar veículo">
+          <ion-icon name="create-outline" slot="icon-only"></ion-icon>
         </ion-button>
-      </ion-col>
-      <ion-col size="6">
-        <ion-button expand="block" color="danger" fill="solid" size="default" (click)="manutencao()">
-          <div class="ion-text-center">
-            <ion-icon name="construct-outline" style="font-size: 24px; display: block; margin: 0 auto; color: white;"></ion-icon>
-            <span style="font-size: 12px;">Manutenção</span>
-          </div>
-        </ion-button>
-      </ion-col>
-    </ion-row>
-    <ion-row class="ion-margin-top">
-      <ion-col size="6">
-        <ion-button expand="block" fill="outline" size="default" (click)="historicoAbastecimentos()">
-          <div class="ion-text-center">
-            <ion-icon name="reader-outline" style="font-size: 24px; display: block; margin: 0 auto;"></ion-icon>
-            <span style="font-size: 12px;">Histórico de Abastecimentos</span>
-          </div>
-        </ion-button>
-      </ion-col>
-      <ion-col size="6">
-        <ion-button expand="block" fill="outline" size="default" (click)="historicoManutencoes()">
-          <div class="ion-text-center">
-            <ion-icon name="albums-outline" style="font-size: 24px; display: block; margin: 0 auto;"></ion-icon>
-            <span style="font-size: 12px;">Histórico de Manutenções</span>
-          </div>
-        </ion-button>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+      </div>
+      <p *ngIf="veiculo.odometer != null">
+        <strong>Odômetro:</strong> {{ veiculo.odometer | number }} km
+      </p>
+    </div>
+
+    <div class="ion-margin-top" *ngIf="veiculo">
+      <div class="quick-action-row" (click)="abastecer()">
+        <div class="square-icon-btn square-icon-btn-abastecimento">
+          <ion-icon name="gas-station" aria-hidden="true"></ion-icon>
+        </div>
+        <span class="action-label">Abastecer</span>
+      </div>
+
+      <div class="quick-action-row" (click)="fazerMedia()">
+        <div class="square-icon-btn square-icon-btn-media">
+          <ion-icon name="speedometer" aria-hidden="true"></ion-icon>
+        </div>
+        <span class="action-label">Fazer Média</span>
+      </div>
+
+      <div class="quick-action-row" (click)="manutencao()">
+        <div class="square-icon-btn square-icon-btn-manutencao">
+          <ion-icon name="construct-outline" aria-hidden="true"></ion-icon>
+        </div>
+        <span class="action-label">Manutenção</span>
+      </div>
+
+    </div>
+  </div>
 </ion-content>

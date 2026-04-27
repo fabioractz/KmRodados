@@ -28,6 +28,18 @@ const routes: Routes = [
         loadChildren: () => import('../settings/settings.module').then(m => m.SettingsPageModule)
       },
       {
+        path: 'more',
+        loadChildren: () => import('../more/more.module').then(m => m.MorePageModule)
+      },
+      {
+        path: 'expenses',
+        loadChildren: () => import('../expenses/expenses.module').then(m => m.ExpensesPageModule)
+      },
+      {
+        path: 'income',
+        loadChildren: () => import('../income/income.module').then(m => m.IncomePageModule)
+      },
+      {
         path: '',
         redirectTo: '/tabs/home',
         pathMatch: 'full'

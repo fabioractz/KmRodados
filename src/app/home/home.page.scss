@@ -42,25 +42,25 @@
   display: flex;
   align-items: center;
   cursor: pointer;
-  padding: 10px 0;
+  padding: 12px 0; /* Aumentado o espaçamento vertical para melhor toque */
 }
 
 .square-icon-btn {
-  width: 48px;
-  height: 48px;
+  width: 56px;  /* Aumentado de 48px para 56px */
+  height: 56px; /* Aumentado de 48px para 56px */
   background-color: var(--ion-color-primary);
   /* Fallback to white if variable is missing, ensures contrast against primary */
   color: var(--ion-color-primary-contrast, #ffffff); 
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: 16px; /* Aumentado o radius proporcionalmente */
   box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb), 0.3);
   transition: transform 0.1s ease;
 }
 
 .square-icon-btn ion-icon {
-  font-size: 24px;
+  font-size: 28px; /* Aumentado de 24px para 28px */
   /* Explicitly inherit color to ensure visibility */
   color: inherit; 
 }
@@ -69,11 +69,32 @@
   transform: scale(0.95);
 }
 
+.square-icon-btn-abastecimento {
+  background-color: #ffc409 !important;
+  color: #fff !important;
+  box-shadow: 0 4px 10px rgba(255, 196, 9, 0.3) !important;
+}
+
+.square-icon-btn-abastecimento ion-icon {
+  color: #fff !important;
+}
+
+.square-icon-btn-manutencao {
+  background-color: #e65100 !important;
+  color: #fff !important;
+  box-shadow: 0 4px 10px rgba(230, 81, 0, 0.3) !important;
+}
+
+.square-icon-btn-manutencao ion-icon {
+  color: #fff !important;
+}
+
 .action-label {
-  margin-left: 15px;
-  font-size: 16px;
-  font-weight: 500;
+  margin-left: 16px;
+  font-size: 1.05rem; /* Levemente aumentado */
+  font-weight: 600;   /* Aumentado peso para melhor leitura */
   color: var(--ion-text-color);
+  letter-spacing: 0.01em;
 }
 
 .stat-box {
@@ -104,6 +125,100 @@
     font-weight: bold;
     color: var(--ion-color-dark);
   }
+
+  .stat-sublabel {
+    font-size: 0.8em;
+    color: var(--ion-color-medium);
+    margin-top: 2px;
+  }
+}
+
+// Texto discreto para estado "aguardando média de consumo"
+.stat-box .stat-value.texto-consumo-aguardando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8em;
+  font-weight: normal;
+  color: var(--ion-color-medium);
+}
+
+.stat-box .stat-value.texto-consumo-aguardando ion-icon {
+  font-size: 1.1em;
+  margin-bottom: 4px;
+}
+
+.subtitulo-media-ciclos {
+  font-size: 0.78em;
+  color: var(--ion-color-medium);
+  margin: 6px 0 8px;
+  font-weight: normal;
+}
+
+.lista-ciclos-consumo-resumo {
+  margin: 0 0 10px;
+  font-size: 0.82em;
+  font-weight: normal;
+  color: var(--ion-color-dark);
+  line-height: 1.45;
+}
+
+.botao-toggle-ciclos {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: 6px 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--ion-color-medium);
+  font-size: 0.82em;
+  text-align: left;
+}
+
+.cabecalho-toggle-ciclos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.linha-ciclo-consumo {
+  border-top: 1px solid var(--ion-color-step-100, rgba(0, 0, 0, 0.08));
+  padding: 8px 0;
+}
+
+.linha-ciclo-consumo:last-child {
+  border-bottom: 1px solid var(--ion-color-step-100, rgba(0, 0, 0, 0.08));
+}
+
+.resumo-ciclo-consumo {
+  font-size: 0.95em;
+}
+
+.detalhes-ciclo-consumo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 8px;
+  color: var(--ion-color-medium);
+  font-size: 0.92em;
+}
+
+.aviso-ciclos-rejeitados {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.78em;
+  color: var(--ion-color-warning-shade, #b8860b);
+  margin-top: 4px;
+  font-weight: normal;
+}
+
+.aviso-ciclos-rejeitados ion-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 1.1em;
 }
 
 ion-card {
@@ -214,11 +329,11 @@ body.dark .item-historico {
 }
 
 .lista-historico .caixa-icone-abastecimento {
-  background-color: var(--ion-color-success-shade);
+  background-color: #ffc409;
 }
 
 .lista-historico .caixa-icone-manutencao {
-  background-color: var(--ion-color-danger-shade);
+  background-color: #e65100;
 }
 
 .lista-historico .caixa-icone-consumo {
@@ -226,9 +341,44 @@ body.dark .item-historico {
 }
 
 .lista-historico .caixa-icone-viagem {
-  background-color: var(--ion-color-warning-shade);
+  /* Ícone de viagens em azul */
+  background-color: #3880ff;
 }
 
 .lista-historico .caixa-icone-veiculo {
   background-color: var(--ion-color-tertiary-shade);
+}
+
+.lista-historico .caixa-icone-despesa {
+  background-color: #eb445a;
+}
+
+.lista-historico .caixa-icone-receita {
+  /* Verde dinheiro para receitas */
+  background-color: #1f7a3a;
+}
+
+.history-action-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: 0;
+  min-width: auto;
+}
+
+.history-action-buttons ion-button {
+  margin: 0 0 0 4px;
+  height: 44px; /* Altura acessível (igual à HistoryPage) */
+  width: 44px;  /* Largura acessível (igual à HistoryPage) */
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.history-action-buttons ion-button:last-child {
+  margin-right: -8px; /* Compensa padding do item para encostar na borda direita */
+}
+
+.history-action-buttons ion-icon {
+  font-size: 24px; /* Ícone maior (igual à HistoryPage) */
 }

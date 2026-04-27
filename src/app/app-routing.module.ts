@@ -21,6 +21,14 @@ const routes: Routes = [
   {
     path: 'consumption-history',
     loadChildren: () => import('./consumption-history/consumption-history.module').then( m => m.ConsumptionHistoryPageModule)
+  },
+  {
+    path: 'expense-history',
+    loadChildren: () => import('./expense-history/expense-history.module').then( m => m.ExpenseHistoryPageModule)
+  },
+  {
+    path: 'income-history',
+    loadChildren: () => import('./income-history/income-history.module').then( m => m.IncomeHistoryPageModule)
   }
 ];
 

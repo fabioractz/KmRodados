@@ -1,55 +1,109 @@
-<ion-header>
+<ion-header mode="ios">
   <ion-toolbar>
-    <ion-title>Cálculo de Consumo</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="close()">Fechar</ion-button>
+    <ion-buttons slot="start">
+      <ion-button (click)="close()">
+        <ion-icon slot="start" name="chevron-back"></ion-icon>
+        Voltar
+      </ion-button>
     </ion-buttons>
+    <ion-title>Fazer Média</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding">
-  <ion-item>
-    <ion-select [(ngModel)]="calcSelectedVehicle" label="Veículo" label-placement="stacked">
+
+<ion-content>
+  <ion-header collapse="condense" mode="ios">
+    <ion-toolbar>
+      <ion-title size="large">Fazer Média</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  
+  <div class="ion-padding">
+    <ion-card *ngIf="hasValidationErrors" class="validation-card">
+    <ion-card-content>
+      <p><strong>Campos obrigatórios não preenchidos:</strong></p>
+      <ul>
+        <li *ngFor="let field of missingFields">{{ field }}</li>
+      </ul>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-item [class.required-field]="vehicleError">
+    <ion-select [(ngModel)]="calcSelectedVehicle" (ionChange)="vehicleError = false" label="Veículo *" label-placement="floating">
       <ion-select-option *ngFor="let v of vehicles" [value]="v.plate">{{ v.model }} ({{ v.plate | uppercase }})</ion-select-option>
     </ion-select>
   </ion-item>
-  <ion-item>
-    <ion-label position="stacked">
-      Odômetro Inicial (km)
-      <span
-        class="icone-ajuda-odometro"
-        tabindex="0"
-        (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
-    </ion-label>
-    <ion-input type="number" inputmode="numeric" [(ngModel)]="calcInitialOdometer" (ionChange)="updateDistance()"></ion-input>
+
+  <ion-card class="ion-no-margin ion-margin-top ion-margin-bottom" style="border-radius: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid var(--ion-color-step-150, #d7d8da);">
+    <ion-card-header>
+      <ion-card-title style="font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between;">
+        Odômetro
+        <span
+          class="icone-ajuda-odometro"
+          tabindex="0"
+          (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content class="odometer-card-content">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="6" class="col-inicial">
+            <ion-item lines="full" [class.required-field]="initialOdometerError" class="ion-no-padding-end item-odometro odometer-item">
+              <ion-input
+                type="tel"
+                inputmode="decimal"
+                label="Inicial"
+                label-placement="floating"
+                [(ngModel)]="calcInitialOdometerStr"
+                (ionInput)="formatInitialOdometer($event)"
+                class="odometer-input">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="6" class="col-final">
+            <ion-item lines="full" [class.required-field]="finalOdometerError" class="item-odometro odometer-item">
+              <ion-input
+                type="tel"
+                inputmode="decimal"
+                label="Final"
+                label-placement="floating"
+                [(ngModel)]="calcFinalOdometerStr"
+                (ionInput)="formatFinalOdometer($event)"
+                class="odometer-input">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12" class="col-distancia">
+            <ion-item lines="none" class="item-distancia">
+              <ion-input type="number" inputmode="numeric" label="Distância Percorrida (km)" label-placement="floating" [(ngModel)]="calcDist" readonly></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-item [class.required-field]="litersError">
+    <ion-input
+      type="tel"
+      inputmode="decimal"
+      label="Litros Abastecidos *"
+      label-placement="floating"
+      [(ngModel)]="calcLiters"
+      (ionInput)="calculateConsumption($event)">
+    </ion-input>
   </ion-item>
   <ion-item>
-    <ion-label position="stacked">
-      Odômetro Final (km)
-      <span
-        class="icone-ajuda-odometro"
-        tabindex="0"
-        (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
-    </ion-label>
-    <ion-input type="number" inputmode="numeric" [(ngModel)]="calcFinalOdometer" (ionChange)="updateDistance()"></ion-input>
-  </ion-item>
-  <ion-item>
-    <ion-input type="number" inputmode="numeric" label="Distância Percorrida (km)" label-placement="stacked" [(ngModel)]="calcDist" readonly></ion-input>
-  </ion-item>
-  <ion-item>
-    <ion-input type="number" inputmode="decimal" label="Litros Abastecidos" label-placement="stacked" [(ngModel)]="calcLiters" (ionChange)="calculateConsumption()"></ion-input>
-  </ion-item>
-  <ion-item lines="none">
     <ion-label>
       <h2>Média de Consumo</h2>
       <p style="font-size: 24px; font-weight: bold; color: var(--ion-color-primary);">
-        {{ calcResult ? (calcResult | number:'1.2-2') + ' km/l' : '--' }}
+        {{ calcResult ? (calcResult | number:'1.2-3') + ' km/l' : '--' }}
       </p>
     </ion-label>
   </ion-item>
-  <ion-button expand="block" class="ion-margin-top" (click)="save()" [disabled]="!calcResult">
+  <ion-button expand="block" class="ion-margin-top" (click)="save()">
     Salvar
   </ion-button>
-  <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="viewHistory()">
-    Histórico
-  </ion-button>
+  </div>
 </ion-content>

@@ -1,0 +1,176 @@
+/* Ajuste específico para o Título Grande no Modal */
+ion-header[collapse="condense"] ion-title {
+  --padding-start: 0; /* Remove qualquer padding para alinhar com a borda do input */
+  font-size: 24px !important;
+  padding-bottom: 20px; /* Espaço inferior consistente */
+}
+
+/* Garante que o conteúdo não fique colado */
+ion-content {
+  --padding-top: 16px;
+}
+
+/* Estilização específica para o card de Odômetro */
+.odometer-card-content {
+  padding: 0 4px 8px; /* Margens laterais (4px) e inferior (8px) do card-content */
+}
+
+/* Ajuste do padding do título do card para alinhar com o padding inferior */
+ion-card-header {
+  padding-top: 12px;
+  padding-bottom: 0;
+}
+
+ion-card-title {
+  margin-top: 0;
+  margin-bottom: 8px; /* Espaço inferior para o conteúdo */
+}
+
+/* Removemos o padding global que estava zerando tudo e definimos para este contexto */
+.odometer-card-content ion-grid {
+  padding: 0;
+}
+
+.odometer-card-content ion-col {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Coluna Inicial: margem esquerda do card, margem direita para separar do outro campo */
+.odometer-card-content .col-inicial {
+  padding-left: 4px;
+  padding-right: 4px; /* Espaço entre campos reduzido */
+}
+
+/* Coluna Final: margem esquerda para separar do outro campo, margem direita do card */
+.odometer-card-content .col-final {
+  padding-left: 4px; /* Espaço entre campos reduzido */
+  padding-right: 4px;
+}
+
+/* Itens de Odômetro (Inicial e Final) */
+.item-odometro {
+  --border-radius: 8px; /* Arredondamento suave */
+  box-shadow: none;
+  margin-bottom: 0;
+  /* Contorno discreto usando variáveis de step para adaptação automática aos temas */
+  border: 1px solid var(--ion-color-step-200, #cccccc);
+  --background: transparent;
+  /* Garante que o item preencha a coluna respeitando o padding da coluna */
+}
+
+/* Coluna de Distância (ocupa toda a largura) */
+.odometer-card-content .col-distancia {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Item de Distância */
+.item-distancia {
+  --border-radius: 8px; /* Arredondamento suave */
+  box-shadow: none;
+  /* Contorno discreto usando variáveis de step para adaptação automática aos temas */
+  border: 1px solid var(--ion-color-step-200, #cccccc);
+  --background: transparent;
+  margin-top: 8px;      /* Espaço acima reduzido */
+  margin-bottom: 4px;   /* Espaço abaixo reduzido */
+  /* Alinhamento exato com os campos superiores:
+     Esquerda: padding-left da col-inicial (4px)
+     Direita: padding-right da col-final (4px)
+  */
+  margin-left: 4px;     
+  margin-right: 4px;    
+}
+
+/* Specific adjustment for grid columns to ensure spacing */
+ion-grid {
+  padding: 0;
+}
+
+ion-col {
+  padding-bottom: 0;
+}
+
+/* Reduced horizontal padding for numeric fields in grid */
+ion-grid ion-item {
+  --padding-start: 8px;
+  --inner-padding-end: 8px;
+}
+
+/* Add spacing between odometer inputs and distance input inside the card */
+ion-grid ion-row:last-child ion-col ion-item {
+  margin-top: 12px;
+}
+
+.odometer-item {
+  /* --background: var(--ion-color-step-50, #ffffff); */
+  /* border-radius: 16px; */
+  /* margin-bottom: 16px; */
+  /* Manter estilo original do card de odometro aqui, apenas ajustando input */
+  
+  /* Ajuste para o input ficar mais destacado */
+  ion-input {
+    /* font-weight: 500; removido */
+  }
+}
+
+ion-item.required-field {
+  --background: rgba(255, 200, 200, 0.3) !important;
+  --background-focused: rgba(255, 200, 200, 0.5) !important;
+  --background-hover: rgba(255, 200, 200, 0.4) !important;
+  border: 1px solid rgba(255, 150, 150, 0.8) !important;
+}
+
+/* New styles for rounded and spaced fields */
+ion-item {
+  --border-radius: 16px;
+  border-radius: 16px;
+  --border-width: 0;
+  border: 1px solid var(--ion-color-step-150, #d7d8da);
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --background: var(--ion-color-step-50, #ffffff);
+  overflow: hidden;
+}
+
+/* Remove default highlight (bottom line on focus) to keep the rounded box look */
+ion-item::part(native) {
+  border-radius: 16px;
+  border-bottom-width: 0;
+}
+
+/* Remove spin buttons from number inputs */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.validation-card {
+  margin-bottom: 16px;
+  background: rgba(255, 200, 200, 0.3);
+  border: 1px solid rgba(255, 150, 150, 0.6);
+}
+
+.validation-card ion-card-content {
+  padding: 12px 16px;
+}
+
+.validation-card p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.validation-card ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.validation-card li {
+  margin: 4px 0;
+  font-size: 14px;
+}

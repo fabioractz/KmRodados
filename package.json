@@ -1,6 +1,6 @@
 {
   "name": "ionic-app-base",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
   "scripts": {
@@ -34,12 +34,13 @@
     "@capacitor/app": "8.0.0",
     "@capacitor/core": "8.0.2",
     "@capacitor/filesystem": "^8.1.2",
+    "@capacitor/geolocation": "^8.1.0",
     "@capacitor/haptics": "8.0.0",
     "@capacitor/ios": "^8.0.2",
     "@capacitor/keyboard": "8.0.0",
+    "@capacitor/local-notifications": "^8.0.1",
     "@capacitor/share": "^8.0.1",
     "@capacitor/status-bar": "8.0.0",
-    "@capacitor/geolocation": "^8.0.0",
     "@ionic/angular": "^8.0.0",
     "chart.js": "^4.5.1",
     "ionicons": "^7.0.0",

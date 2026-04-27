@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { addIcons } from 'ionicons';
+import { speedometer, constructOutline, createOutline } from 'ionicons/icons';
 import { VehicleService, Vehicle } from '../../services/vehicle.service';
 
 @Component({
@@ -16,7 +18,14 @@ export class VeiculoAcoesPage implements OnInit {
     private rota: ActivatedRoute,
     private roteador: Router,
     public servicoVeiculo: VehicleService
-  ) {}
+  ) {
+    addIcons({
+      speedometer,
+      'construct-outline': constructOutline,
+      'create-outline': createOutline,
+      'gas-station': 'assets/icon/gas-station.svg'
+    });
+  }
 
   ngOnInit() {
     this.placaVeiculo = this.rota.snapshot.paramMap.get('plate') || '';
@@ -43,21 +52,19 @@ export class VeiculoAcoesPage implements OnInit {
     });
   }
 
-  historicoAbastecimentos() {
+  fazerMedia() {
     if (!this.veiculo) {
       return;
     }
-    this.roteador.navigate(['/supply-history'], {
-      queryParams: { plate: this.veiculo.plate }
+    this.roteador.navigate(['/tabs/home'], {
+      queryParams: { action: 'calculator', plate: this.veiculo.plate, source: 'vehicles' }
     });
   }
 
-  historicoManutencoes() {
+  editarVeiculo() {
     if (!this.veiculo) {
       return;
     }
-    this.roteador.navigate(['/maintenance-history'], {
-      queryParams: { plate: this.veiculo.plate }
-    });
+    this.roteador.navigate(['/tabs/vehicles/form', this.veiculo.plate]);
   }
 }

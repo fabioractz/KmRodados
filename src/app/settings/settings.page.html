@@ -1,15 +1,19 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" mode="ios">
   <ion-toolbar>
-    <ion-title>Configurações</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/more" text="Voltar"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mais</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
+  <ion-header collapse="condense" mode="ios">
     <ion-toolbar>
       <ion-title size="large">Configurações</ion-title>
     </ion-toolbar>
   </ion-header>
+
   <ion-list>
     <ion-radio-group [value]="themeMode" (ionChange)="changeTheme($event)">
       <ion-list-header>

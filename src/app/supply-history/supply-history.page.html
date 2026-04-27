@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header [translucent]="true" mode="ios">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/home" text="Voltar"></ion-back-button>
@@ -7,7 +7,12 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense" mode="ios">
+    <ion-toolbar>
+      <ion-title size="large">Histórico de Abastecimentos</ion-title>
+    </ion-toolbar>
+  </ion-header>
   <div *ngIf="supplies.length === 0" class="ion-padding ion-text-center">
     <p>Nenhum abastecimento registrado.</p>
   </div>

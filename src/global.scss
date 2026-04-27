@@ -45,6 +45,11 @@ ion-icon {
   color: var(--ion-color-primary);
 }
 
+/* Fixar ícone de Receitas (cash-outline) azul, independente do tema */
+ion-icon[name="cash-outline"] {
+  color: #1f7a3a; /* verde dinheiro mais escuro */
+}
+
 :root {
   /* Tema claro: fundo claro, texto escuro */
   --ajuda-odometro-bg: rgba(255, 255, 255, 0.95);
@@ -97,6 +102,21 @@ ion-popover.popover-ajuda-odometro::part(content) {
 /* Ensure contrast on primary buttons */
 .ion-color-primary {
   color: var(--ion-color-primary-contrast) !important;
+}
+
+/*
+ * Layout data + hora: data em DD/MM/YYYY ocupa menos espaço;
+ * garante espaço reservado para o campo Hora ao lado.
+ */
+.linha-data-hora {
+  .container-data {
+    min-width: 0;
+    max-width: 55%;
+  }
+  .container-hora {
+    flex-shrink: 0;
+    min-width: fit-content;
+  }
 }
 
 /* 
@@ -226,6 +246,28 @@ body.dark ion-datetime::part(wheel-item active) {
   --ion-safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+.md {
+  --ion-safe-area-top: 0px;
+  --ion-safe-area-bottom: 0px;
+}
+
 ion-header ion-toolbar {
   padding-top: var(--ion-safe-area-top, 0px);
+}
+
+/* Reduzir tamanho dos ícones de editar e lixeira nos históricos */
+ion-item ion-buttons[slot="end"] ion-button {
+  --padding-start: 4px;
+  --padding-end: 4px;
+  margin: 0 2px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+ion-item ion-buttons[slot="end"] ion-icon {
+  font-size: 18px !important;
+  width: 18px;
+  height: 18px;
 }

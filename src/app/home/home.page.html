@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" mode="ios">
   <ion-toolbar>
     <ion-title>
       Início
@@ -7,7 +7,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
+  <ion-header collapse="condense" mode="ios">
     <ion-toolbar>
       <ion-title size="large">Início</ion-title>
     </ion-toolbar>
@@ -34,13 +34,14 @@
     </ion-card-header>
     <ion-card-content *ngIf="showSummaryCard">
       <ion-item lines="none" class="vehicle-select">
-        <ion-select [(ngModel)]="summaryVehiclePlate" (ionChange)="updateSummary()" label="Veículo" label-placement="stacked">
+        <ion-select [(ngModel)]="summaryVehiclePlate" (ionChange)="updateSummary()" label="Veículo" label-placement="floating">
           <ion-select-option *ngFor="let v of vehicles" [value]="v.plate">{{ v.model }} ({{ v.plate | uppercase }})</ion-select-option>
         </ion-select>
       </ion-item>
       
       <ion-grid class="summary-grid">
         <ion-row>
+          <!-- Estado do veículo -->
           <ion-col size="6">
             <div class="stat-box">
               <div class="stat-label">
@@ -59,36 +60,24 @@
               <div class="stat-value">{{ tripCount }}</div>
             </div>
           </ion-col>
-          
+
+          <!-- Abastecimento -->
           <ion-col size="6">
             <div class="stat-box">
               <div class="stat-label">Último Abast.</div>
               <div class="stat-value" *ngIf="lastSupplyPrice > 0">{{ lastSupplyPrice | currency:'BRL' }}</div>
               <div class="stat-value" *ngIf="lastSupplyPrice === 0">-</div>
-              <div style="font-size: 0.8em; color: var(--ion-color-medium);" *ngIf="lastSupplyLiters > 0">{{ lastSupplyLiters | number:'1.2-2' }} L</div>
+              <div class="stat-sublabel" *ngIf="lastSupplyLiters > 0">{{ lastSupplyLiters | number:'1.2-2' }} L</div>
             </div>
           </ion-col>
-          <ion-col size="6">
-            <div class="stat-box">
-              <div class="stat-label">Último Consumo</div>
-              <div class="stat-value" *ngIf="lastConsumptionResult > 0">{{ lastConsumptionResult | number:'1.2-2' }} Km/L</div>
-              <div class="stat-value" *ngIf="lastConsumptionResult === 0">-</div>
-            </div>
-          </ion-col>
-
           <ion-col size="6">
             <div class="stat-box">
               <div class="stat-label">Média Abast.</div>
               <div class="stat-value">{{ avgSupply | currency:'BRL' }}</div>
             </div>
           </ion-col>
-          <ion-col size="6">
-            <div class="stat-box">
-              <div class="stat-label">Média Consumo</div>
-              <div class="stat-value">{{ avgConsumption | number:'1.2-2' }} Km/L</div>
-            </div>
-          </ion-col>
 
+          <!-- Manutenção -->
           <ion-col size="6">
             <div class="stat-box">
               <div class="stat-label">Última Manut.</div>
@@ -102,6 +91,48 @@
               <div class="stat-value">{{ avgMaintenance | currency:'BRL' }}</div>
             </div>
           </ion-col>
+
+          <!-- Média Consumo em destaque (ciclos tanque cheio → tanque cheio) -->
+          <ion-col size="12">
+            <div class="stat-box">
+              <div class="stat-label">
+                Média Consumo
+                <span class="icone-ajuda-odometro" tabindex="0" (click)="ajuda_odometro.mostrarAjudaMediaConsumo($event)">?</span>
+              </div>
+              <ng-container *ngIf="analiseConsumoResumo.ciclosValidos.length > 0">
+                <div class="stat-value">{{ avgConsumption | number:'1.2-2' }} Km/L</div>
+                <p class="subtitulo-media-ciclos">Média entre {{ analiseConsumoResumo.ciclosValidos.length }} ciclo(s) válido(s)</p>
+                <div class="cabecalho-toggle-ciclos">
+                  <button type="button" class="botao-toggle-ciclos" (click)="alternarDetalhesCiclosConsumo()">
+                    <span>{{ ciclosConsumoEstaoExpandidos() ? 'Ocultar detalhes dos ciclos' : 'Mostrar detalhes dos ciclos' }}</span>
+                    <ion-icon [name]="ciclosConsumoEstaoExpandidos() ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></ion-icon>
+                  </button>
+                  <span class="icone-ajuda-odometro" tabindex="0" (click)="ajuda_odometro.mostrarAjudaCiclosConsumo($event)">?</span>
+                </div>
+                <div class="lista-ciclos-consumo-resumo" *ngIf="ciclosConsumoEstaoExpandidos()">
+                  <div class="linha-ciclo-consumo" *ngFor="let c of analiseConsumoResumo.ciclosValidos; let idx = index">
+                    <div class="resumo-ciclo-consumo"><strong>Ciclo {{ idx + 1 }}</strong> · {{ c.consumoKmPorLitro | number:'1.2-2' }} km/L</div>
+                    <div class="detalhes-ciclo-consumo">
+                      <span>{{ c.kmPercorridos | number:'1.0-0' }} km percorridos</span>
+                      <span>{{ c.litrosTotaisNoCiclo | number:'1.2-2' }} L consumidos</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="aviso-ciclos-rejeitados" *ngIf="analiseConsumoResumo.ciclosRejeitados.length > 0">
+                  <ion-icon name="warning-outline" aria-hidden="true"></ion-icon>
+                  <span>{{ analiseConsumoResumo.ciclosRejeitados.length }} trecho(s) possível(is) ignorado(s) por inconsistência (odômetro, litros ou datas).</span>
+                </div>
+              </ng-container>
+              <div class="stat-value texto-consumo-aguardando" *ngIf="analiseConsumoResumo.ciclosValidos.length === 0 && !temDoisAbastecimentosTanqueCompleto">
+                <ion-icon name="hourglass-outline" style="margin-right: 6px; opacity: 0.7;"></ion-icon>
+                <span>Não é possível calcular o consumo com precisão: são necessários pelo menos dois abastecimentos com <strong>tanque cheio</strong> que delimitem um ciclo (abastecimentos parciais entre eles entram na soma de litros).</span>
+              </div>
+              <div class="stat-value texto-consumo-aguardando" *ngIf="analiseConsumoResumo.ciclosValidos.length === 0 && temDoisAbastecimentosTanqueCompleto">
+                <ion-icon name="warning-outline" style="margin-right: 6px; opacity: 0.85;"></ion-icon>
+                <span>Não é possível calcular o consumo com precisão com os dados atuais. Verifique odômetros (após o 1.º cheio e antes do 2.º), litros em cada abasto e a ordem das datas.</span>
+              </div>
+            </div>
+          </ion-col>
         </ion-row>
       </ion-grid>
 
@@ -112,7 +143,7 @@
   <ion-card *ngIf="homeCardsEnabled['consumption']" [style.order]="getOrderIndex('consumption')">
     <ion-card-header>
       <div class="card-header-row">
-        <ion-card-title>Histórico de Consumo</ion-card-title>
+        <ion-card-title>Consumo</ion-card-title>
         <ion-button fill="clear" size="small" class="card-toggle-btn" (click)="toggleCardExpansion('consumptionChart')">
           <ion-icon [name]="showConsumptionChartCard ? 'chevron-up' : 'chevron-down'"></ion-icon>
         </ion-button>
@@ -132,7 +163,7 @@
   <ion-card *ngIf="homeCardsEnabled['maintenance']" [style.order]="getOrderIndex('maintenance')">
     <ion-card-header>
       <div class="card-header-row">
-        <ion-card-title>Histórico de Manutenções</ion-card-title>
+        <ion-card-title>Manutenções</ion-card-title>
         <ion-button fill="clear" size="small" class="card-toggle-btn" (click)="toggleCardExpansion('maintenanceChart')">
           <ion-icon [name]="showMaintenanceChartCard ? 'chevron-up' : 'chevron-down'"></ion-icon>
         </ion-button>
@@ -159,42 +190,26 @@
       </div>
     </ion-card-header>
     <ion-card-content *ngIf="showQuickActionsCard">
-    <div class="quick-action-row" (click)="openSupplyModal()">
-      <div class="square-icon-btn" style="background-color: var(--ion-color-success); box-shadow: 0 4px 10px rgba(var(--ion-color-success-rgb), 0.3);">
-        <ion-icon name="gas-station" style="color: white;"></ion-icon>
+      <div class="quick-action-row" (click)="openSupplyModal()">
+        <div class="square-icon-btn square-icon-btn-abastecimento">
+          <ion-icon name="gas-station"></ion-icon>
+        </div>
+        <span class="action-label">Abastecer</span>
       </div>
-      <span class="action-label">Abastecer</span>
-    </div>
 
-    <div class="quick-action-row" (click)="openConsumptionModal()">
-      <div class="square-icon-btn" style="background-color: var(--ion-color-dark); color: var(--ion-color-dark-contrast); box-shadow: 0 4px 10px rgba(var(--ion-color-dark-rgb), 0.3);">
-        <ion-icon name="speedometer"></ion-icon>
+      <div class="quick-action-row" (click)="openConsumptionModal()">
+        <div class="square-icon-btn" style="background-color: var(--ion-color-dark); color: var(--ion-color-dark-contrast); box-shadow: 0 4px 10px rgba(var(--ion-color-dark-rgb), 0.3);">
+          <ion-icon name="speedometer"></ion-icon>
+        </div>
+        <span class="action-label">Fazer Média</span>
       </div>
-      <span class="action-label">Cálculo de Consumo</span>
-    </div>
 
-    <div class="quick-action-row" (click)="openMaintenanceModal()">
-      <div class="square-icon-btn" style="background-color: var(--ion-color-danger); box-shadow: 0 4px 10px rgba(var(--ion-color-danger-rgb), 0.3);">
-        <ion-icon name="construct-outline" style="color: white;"></ion-icon>
+      <div class="quick-action-row" (click)="openMaintenanceModal()">
+        <div class="square-icon-btn square-icon-btn-manutencao">
+          <ion-icon name="construct-outline"></ion-icon>
+        </div>
+        <span class="action-label">Manutenção</span>
       </div>
-      <span class="action-label">Manutenção</span>
-    </div>
-
-    <div class="quick-action-row" (click)="abrir_historico_abastecimentos()">
-      <div class="square-icon-btn" style="background-color: var(--ion-color-primary); box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb), 0.3);">
-        <ion-icon name="reader-outline" style="color: white;"></ion-icon>
-      </div>
-      <span class="action-label">Histórico de Abastecimentos</span>
-    </div>
-
-    <div class="quick-action-row" (click)="abrir_historico_manutencoes()">
-      <div class="square-icon-btn" style="background-color: var(--ion-color-tertiary); box-shadow: 0 4px 10px rgba(var(--ion-color-tertiary-rgb), 0.3);">
-        <ion-icon name="albums-outline" style="color: white;"></ion-icon>
-      </div>
-      <span class="action-label">Histórico de Manutenções</span>
-    </div>
-
-
     </ion-card-content>
   </ion-card>
 
@@ -202,7 +217,7 @@
     <ion-card-header>
       <div class="card-header-row">
         <ion-card-title>
-          Histórico
+          Registros Recentes
         </ion-card-title>
         <ion-button fill="clear" size="small" class="card-toggle-btn" (click)="toggleCardExpansion('history')">
           <ion-icon [name]="showHistoryCard ? 'chevron-up' : 'chevron-down'"></ion-icon>
@@ -220,7 +235,9 @@
               'caixa-icone-manutencao': item.type === 'maintenance',
               'caixa-icone-consumo': item.type === 'consumption',
               'caixa-icone-viagem': item.type === 'trip',
-              'caixa-icone-veiculo': item.type === 'vehicle-add'
+              'caixa-icone-veiculo': item.type === 'vehicle-add',
+              'caixa-icone-despesa': item.type === 'expense',
+              'caixa-icone-receita': item.type === 'income'
             }"
           >
             <ion-icon [name]="obter_icone_item_historico_home(item)"></ion-icon>
@@ -248,23 +265,48 @@
             <p *ngIf="item.type === 'trip'">
               Viagem: {{ item.data.distance }}km - Custo: {{ item.data.totalCost | currency:'BRL' }}
             </p>
+            <p *ngIf="item.type === 'trip' && item.data.observations">
+              {{ item.data.observations }}
+            </p>
+
+            <!-- Expense Details -->
+            <p *ngIf="item.type === 'expense'">
+              Despesa: {{ item.data.type || 'Geral' }} - {{ item.data.cost | currency:'BRL' }}
+            </p>
+
+            <!-- Income Details -->
+            <p *ngIf="item.type === 'income'">
+              Receita: {{ item.data.type || 'Geral' }} - {{ item.data.amount | currency:'BRL' }}
+            </p>
 
             <!-- Vehicle Added Details -->
             <p *ngIf="item.type === 'vehicle-add'">
               Veículo Adicionado: {{ item.data.model }} ({{ item.data.plate | uppercase }})
             </p>
           </ion-label>
-          <ion-button slot="end" fill="clear" (click)="editHistoryItem(item)" *ngIf="['supply', 'maintenance', 'consumption'].includes(item.type)">
-            <ion-icon name="create" slot="icon-only"></ion-icon>
-          </ion-button>
+          <ion-buttons slot="end" class="history-action-buttons">
+            <ion-button 
+              fill="clear" 
+              (click)="editHistoryItem(item)" 
+              [style.visibility]="podeEditar(item) ? 'visible' : 'hidden'"
+              [disabled]="!podeEditar(item)">
+              <ion-icon name="create" slot="icon-only"></ion-icon>
+            </ion-button>
+            <ion-button 
+              fill="clear" 
+              color="danger" 
+              (click)="removeHistoryItem(item)" 
+              [style.visibility]="podeApagar(item) ? 'visible' : 'hidden'"
+              [disabled]="!podeApagar(item)">
+              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-buttons>
         </ion-item>
         <ion-item *ngIf="displayedHistory.length === 0">
           <ion-label class="ion-text-center">Nenhum registro encontrado</ion-label>
         </ion-item>
       </ion-list>
-      <div *ngIf="!showAllHistory && allHistory.length > 5" class="ion-text-center ion-padding-top" style="color: var(--ion-color-medium);">
-        <small>Toque para ver mais...</small>
-      </div>
+      
     </ion-card-content>
   </ion-card>
   </div>

@@ -1,9 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { VehicleService, Vehicle, Supply, ConsumptionRecord, Maintenance } from '../services/vehicle.service';
+import {
+  VehicleService,
+  Vehicle,
+  Supply,
+  ConsumptionRecord,
+  Maintenance,
+  ResultadoAnaliseCiclosConsumo
+} from '../services/vehicle.service';
 import { AlertController, ToastController, ModalController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { add, colorFill, chevronDown, chevronUp, speedometer, construct, car, map, create, settings } from 'ionicons/icons';
+import { add, colorFill, chevronDown, chevronUp, speedometer, construct, car, map, create, settings, warningOutline } from 'ionicons/icons';
 import { Chart, registerables, ChartConfiguration, ChartType } from 'chart.js';
 import { SupplyModalComponent } from './modals/supply-modal/supply-modal.component';
 import { ConsumptionModalComponent } from './modals/consumption-modal/consumption-modal.component';
@@ -42,6 +49,15 @@ export class HomePage implements OnInit, OnDestroy {
   avgSupply: number = 0;
   avgConsumption: number = 0;
   avgMaintenance: number = 0;
+  /** Indica se o veículo possui pelo menos dois abastecimentos com tanque cheio, para cálculo de média. */
+  temDoisAbastecimentosTanqueCompleto: boolean = false;
+  /** Análise por ciclos tanque cheio → tanque cheio (Média Consumo no resumo). */
+  analiseConsumoResumo: ResultadoAnaliseCiclosConsumo = {
+    ciclosValidos: [],
+    mediaConsumoKmPorLitro: 0,
+    ciclosRejeitados: []
+  };
+  detalhesCiclosConsumoExpandidos: boolean = false;
   tripCount: number = 0;
   lastUpdateDate: string = '-';
   
@@ -103,7 +119,7 @@ export class HomePage implements OnInit, OnDestroy {
     private router: Router,
     public ajuda_odometro: ServicoAjudaOdometro
   ) {
-    addIcons({ add, colorFill, 'gas-station': 'assets/icon/gas-station.svg', 'chevron-down': chevronDown, 'chevron-up': chevronUp, speedometer, construct, car, map, create, settings });
+    addIcons({ add, colorFill, 'gas-station': 'assets/icon/gas-station.svg', 'chevron-down': chevronDown, 'chevron-up': chevronUp, speedometer, construct, car, map, create, settings, warningOutline });
     this.checkDarkMode();
   }
 
@@ -162,6 +178,10 @@ export class HomePage implements OnInit, OnDestroy {
       } else if (this.vehicles.length === 1) {
         this.selectedVehiclePlate = this.vehicles[0].plate;
         this.summaryVehiclePlate = this.vehicles[0].plate;
+      } else if (this.vehicles.length > 0 && !this.summaryVehiclePlate) {
+        // Garante um veículo padrão para o resumo quando houver mais de um veículo e nenhum padrão marcado
+        this.selectedVehiclePlate = this.vehicles[0].plate;
+        this.summaryVehiclePlate = this.vehicles[0].plate;
       }
       this.updateSummary();
 
@@ -204,6 +224,22 @@ export class HomePage implements OnInit, OnDestroy {
 
   ionViewWillEnter() {
     this.loadHomeCardsPrefs();
+    this.vehicles = this.vehicleService.getVehiclesSnapshot();
+    // Pequeno delay para garantir que os elementos do gráfico estejam no DOM
+    // antes de tentar atualizá-los, caso tenham sido reabilitados nas configurações.
+    setTimeout(() => {
+      if (this.vehicles.length > 0) {
+        if (!this.summaryVehiclePlate) {
+          const defaultVehicle = this.vehicles.find(v => v.isDefault);
+          if (defaultVehicle) {
+            this.summaryVehiclePlate = defaultVehicle.plate;
+          } else {
+            this.summaryVehiclePlate = this.vehicles[0].plate;
+          }
+        }
+        this.updateSummary();
+      }
+    }, 100);
   }
 
   private loadHomeCardsPrefs() {
@@ -290,6 +326,32 @@ export class HomePage implements OnInit, OnDestroy {
         });
       }
 
+      // Other Expenses
+      if (vehicle.otherExpenses) {
+        vehicle.otherExpenses.forEach(exp => {
+          combinedHistory.push({
+            type: 'expense',
+            date: new Date(exp.date),
+            createdAt: exp.createdAt || 0,
+            vehicle: vehicle,
+            data: exp
+          });
+        });
+      }
+
+      // Incomes
+      if (vehicle.incomes) {
+        vehicle.incomes.forEach(inc => {
+          combinedHistory.push({
+            type: 'income',
+            date: new Date(inc.date),
+            createdAt: inc.createdAt || 0,
+            vehicle: vehicle,
+            data: inc
+          });
+        });
+      }
+
       // Vehicle Creation
       if (vehicle.createdAt) {
         combinedHistory.push({
@@ -302,15 +364,32 @@ export class HomePage implements OnInit, OnDestroy {
       }
     });
 
-    // Sort by Date Descending, then CreatedAt Descending
-    this.allHistory = combinedHistory.sort((a, b) => {
-      const dateA = a.date.getTime();
-      const dateB = b.date.getTime();
-      if (dateA !== dateB) {
-        return dateB - dateA;
-      }
-      return b.createdAt - a.createdAt;
-    });
+    // Ordena pela data efetiva do registro (mais recentes primeiro), com fallback em createdAt.
+    this.allHistory = combinedHistory.sort((a, b) => this.compararDataRecenteHistoricoHome(a, b));
+  }
+
+  private obterTimestampItemHistoricoHome(item: any): number {
+    const data = item?.date instanceof Date ? item.date.getTime() : new Date(item?.date).getTime();
+    if (Number.isFinite(data) && data > 0) {
+      return data;
+    }
+    return item?.createdAt ?? 0;
+  }
+
+  private compararDataRecenteHistoricoHome(a: any, b: any): number {
+    const dataA = this.obterTimestampItemHistoricoHome(a);
+    const dataB = this.obterTimestampItemHistoricoHome(b);
+    if (dataA !== dataB) {
+      return dataB - dataA;
+    }
+
+    const criadoA = a?.createdAt ?? 0;
+    const criadoB = b?.createdAt ?? 0;
+    if (criadoA !== criadoB) {
+      return criadoB - criadoA;
+    }
+
+    return (a?.vehicle?.model || '').localeCompare(b?.vehicle?.model || '');
   }
 
   toggleCardExpansion(card: 'summary' | 'quickActions' | 'history' | 'consumptionChart' | 'maintenanceChart') {
@@ -325,6 +404,14 @@ export class HomePage implements OnInit, OnDestroy {
     } else if (card === 'maintenanceChart') {
       this.showMaintenanceChartCard = !this.showMaintenanceChartCard;
     }
+  }
+
+  alternarDetalhesCiclosConsumo(): void {
+    this.detalhesCiclosConsumoExpandidos = !this.detalhesCiclosConsumoExpandidos;
+  }
+
+  ciclosConsumoEstaoExpandidos(): boolean {
+    return this.detalhesCiclosConsumoExpandidos;
   }
 
   getOrderIndex(key: string): number {
@@ -345,6 +432,8 @@ export class HomePage implements OnInit, OnDestroy {
       case 'consumption': return 'speedometer';
       case 'maintenance': return 'construct';
       case 'trip': return 'map';
+      case 'expense': return 'card-outline';
+      case 'income': return 'cash-outline';
       case 'vehicle-add': return 'car';
       default: return 'car';
     }
@@ -356,13 +445,15 @@ export class HomePage implements OnInit, OnDestroy {
       case 'consumption': return 'dark';
       case 'maintenance': return 'danger';
       case 'trip': return 'warning';
+      case 'expense': return 'danger';
+      case 'income': return 'success';
       case 'vehicle-add': return 'tertiary';
       default: return 'medium';
     }
   }
 
   get displayedHistory() {
-    return this.showAllHistory ? this.allHistory : this.allHistory.slice(0, 5);
+    return this.allHistory.slice(0, 4);
   }
 
   updateSummary() {
@@ -380,6 +471,7 @@ export class HomePage implements OnInit, OnDestroy {
         this.lastSupplyDateObj = null;
         this.lastConsumptionResult = 0;
         this.lastMaintenanceValue = 0;
+        this.analiseConsumoResumo = { ciclosValidos: [], mediaConsumoKmPorLitro: 0, ciclosRejeitados: [] };
         this.consumptionChartData = { datasets: [], labels: [] };
         this.maintenanceChartData = { datasets: [], labels: [] };
         return;
@@ -387,6 +479,8 @@ export class HomePage implements OnInit, OnDestroy {
 
     // Avg Supply (Value)
     const supplies = vehicle.supplies || [];
+    const abastecimentosTanqueCheio = supplies.filter(s => s.tanqueCompleto !== false);
+    this.temDoisAbastecimentosTanqueCompleto = abastecimentosTanqueCheio.length >= 2;
     if (supplies.length > 0) {
         const totalVal = supplies.reduce((sum, s) => sum + (s.totalValue || 0), 0);
         this.avgSupply = totalVal / supplies.length;
@@ -407,22 +501,45 @@ export class HomePage implements OnInit, OnDestroy {
         this.lastSupplyDateObj = null;
     }
 
-    // Avg Consumption (Km/L)
-    const history = vehicle.consumptionHistory || [];
-    if (history.length > 0) {
-        const totalCons = history.reduce((sum, h) => sum + (h.result || 0), 0);
-        this.avgConsumption = totalCons / history.length;
-    } else {
-        this.avgConsumption = 0;
-    }
+    // Média de consumo (Km/L) no resumo: apenas ciclos completos tanque cheio → tanque cheio
+    this.analiseConsumoResumo = this.vehicleService.analisarCiclosConsumoPorTanqueCheio(vehicle);
+    this.detalhesCiclosConsumoExpandidos = false;
+    this.avgConsumption =
+      this.analiseConsumoResumo.ciclosValidos.length > 0
+        ? this.analiseConsumoResumo.mediaConsumoKmPorLitro
+        : 0;
 
-    // Last Consumption
-    const sortedCons = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    if (sortedCons.length > 0) {
-        this.lastConsumptionResult = sortedCons[0].result;
-    } else {
-        this.lastConsumptionResult = 0;
+    const history = vehicle.consumptionHistory || [];
+    // Último consumo: prioriza consumo derivado do abastecimento mais recente; senão usa o último registro de média
+    const sortedSuppliesDesc = [...supplies].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    let valorUltimoConsumo = 0;
+
+    if (sortedSuppliesDesc.length >= 2) {
+      const ultimoAbast = sortedSuppliesDesc[0];
+      const anteriorAbast = sortedSuppliesDesc[1];
+      const odoAnterior = anteriorAbast.finalOdometer ?? anteriorAbast.initialOdometer ?? anteriorAbast.odometer ?? 0;
+      const odoAtual = ultimoAbast.initialOdometer ?? ultimoAbast.finalOdometer ?? ultimoAbast.odometer ?? 0;
+      const litros = ultimoAbast.liters ?? 0;
+      if (odoAtual > odoAnterior && litros > 0) {
+        valorUltimoConsumo = (odoAtual - odoAnterior) / litros;
+      }
     }
+    if (valorUltimoConsumo === 0 && sortedSuppliesDesc.length === 1) {
+      const ultimo = sortedSuppliesDesc[0];
+      if (ultimo.average != null && ultimo.average > 0) {
+        valorUltimoConsumo = ultimo.average;
+      } else if (
+        ultimo.initialOdometer != null && ultimo.finalOdometer != null && ultimo.liters != null &&
+        ultimo.finalOdometer > ultimo.initialOdometer && ultimo.liters > 0
+      ) {
+        valorUltimoConsumo = (ultimo.finalOdometer - ultimo.initialOdometer) / ultimo.liters;
+      }
+    }
+    if (valorUltimoConsumo === 0 && history.length > 0) {
+      const sortedCons = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      valorUltimoConsumo = sortedCons[0].result ?? 0;
+    }
+    this.lastConsumptionResult = valorUltimoConsumo;
 
     // Avg Maintenance (Value)
     const maintenances = vehicle.maintenance || [];
@@ -441,19 +558,56 @@ export class HomePage implements OnInit, OnDestroy {
         this.lastMaintenanceValue = 0;
     }
 
-    // Current Odometer (Max of all records)
-    let maxOdo = 0;
-    supplies.forEach(s => { 
-        if((s.odometer || 0) > maxOdo) maxOdo = s.odometer || 0;
-        if((s.finalOdometer || 0) > maxOdo) maxOdo = s.finalOdometer || 0;
+    // Odômetro atual = MAIOR odômetro registrado (veículo + qualquer tipo de registro que tenha odômetro)
+    const registrosOdometro: { data: Date; valor: number }[] = [];
+
+    // Cadastro do veículo
+    if ((vehicle.odometer ?? 0) > 0) {
+      registrosOdometro.push({
+        data: vehicle.createdAt ? new Date(vehicle.createdAt) : new Date(),
+        valor: vehicle.odometer!
+      });
+    }
+
+    // Abastecimentos
+    supplies.forEach(s => {
+      const dataReg = new Date(s.date);
+      const valor = s.finalOdometer ?? s.initialOdometer ?? s.odometer ?? 0;
+      if (valor > 0) {
+        registrosOdometro.push({ data: dataReg, valor });
+      }
     });
-    history.forEach(c => { 
-        if((c.finalOdometer || 0) > maxOdo) maxOdo = c.finalOdometer || 0;
-        // c.distance is trip distance, not odometer reading
-    }); 
-    maintenances.forEach(m => { if((m.odometer || 0) > maxOdo) maxOdo = m.odometer || 0; });
-    
-    this.currentOdometer = maxOdo;
+
+    // Registros de média de consumo (quando tiver odômetro final)
+    history.forEach(c => {
+      const valor = c.finalOdometer ?? 0;
+      if (valor > 0) {
+        registrosOdometro.push({ data: new Date(c.date), valor });
+      }
+    });
+
+    // Manutenções
+    maintenances.forEach(m => {
+      if ((m.odometer ?? 0) > 0) {
+        registrosOdometro.push({ data: new Date(m.date), valor: m.odometer! });
+      }
+    });
+
+    // Outras despesas com odômetro preenchido
+    const outrasDespesas = vehicle.otherExpenses || [];
+    outrasDespesas.forEach(e => {
+      if ((e.odometer ?? 0) > 0) {
+        registrosOdometro.push({ data: new Date(e.date), valor: e.odometer! });
+      }
+    });
+    if (registrosOdometro.length > 0) {
+      const maior = registrosOdometro.reduce((acc, atual) => {
+        return atual.valor > acc.valor ? atual : acc;
+      }, registrosOdometro[0]);
+      this.currentOdometer = maior.valor;
+    } else {
+      this.currentOdometer = 0;
+    }
 
     // Trip Count
     this.tripCount = (vehicle.trips || []).length;
@@ -461,14 +615,50 @@ export class HomePage implements OnInit, OnDestroy {
     // Last Date
     this.lastUpdateDate = new Date().toLocaleDateString('pt-BR');
 
-    // Chart Data - Consumption
-    // Sort consumption history by date
-    const sortedConsumption = [...history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
+    // Chart Data - Consumption: registros de média (history) + consumo derivado dos abastecimentos, ordenados por data
+    const pontosConsumo: { data: Date; resultado: number }[] = [];
+    history.forEach(h => {
+      pontosConsumo.push({ data: new Date(h.date), resultado: h.result ?? 0 });
+    });
+    const suppliesOrdenados = [...supplies].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    suppliesOrdenados.forEach((atual, i) => {
+      let resultado = 0;
+      if (atual.average != null && atual.average > 0) {
+        resultado = atual.average;
+      } else if (atual.initialOdometer != null && atual.finalOdometer != null && atual.liters != null && atual.liters > 0 && atual.finalOdometer > atual.initialOdometer) {
+        resultado = (atual.finalOdometer - atual.initialOdometer) / atual.liters;
+      } else if (i > 0) {
+        const anterior = suppliesOrdenados[i - 1];
+        const odoAnterior = anterior.finalOdometer ?? anterior.initialOdometer ?? anterior.odometer ?? 0;
+        const odoAtual = atual.initialOdometer ?? atual.finalOdometer ?? atual.odometer ?? 0;
+        const litros = atual.liters ?? 0;
+        if (odoAtual > odoAnterior && litros > 0) {
+          resultado = (odoAtual - odoAnterior) / litros;
+        }
+      }
+      if (resultado > 0) {
+        pontosConsumo.push({ data: new Date(atual.date), resultado });
+      }
+    });
+    pontosConsumo.sort((a, b) => a.data.getTime() - b.data.getTime());
+    const porData = new Map<number, number>();
+    pontosConsumo.forEach(p => {
+      const dia = new Date(p.data.getFullYear(), p.data.getMonth(), p.data.getDate()).getTime();
+      porData.set(dia, p.resultado);
+    });
+    const sortedConsumption = Array.from(porData.entries())
+      .map(([t, resultado]) => ({ data: new Date(t), resultado }))
+      .sort((a, b) => a.data.getTime() - b.data.getTime());
+    const chartLabels = sortedConsumption.map(p => {
+      const d = p.data.toISOString().split('T')[0];
+      const [year, month, day] = d.split('-');
+      return `${day}/${month}/${year}`;
+    });
+    const chartValues = sortedConsumption.map(p => p.resultado);
     this.consumptionChartData = {
         datasets: [
             {
-                data: sortedConsumption.map(h => h.result),
+                data: chartValues,
                 label: 'Consumo (Km/L)',
                 backgroundColor: 'rgba(56, 128, 255, 0.2)',
                 borderColor: 'rgba(56, 128, 255, 1)',
@@ -480,11 +670,7 @@ export class HomePage implements OnInit, OnDestroy {
                 borderWidth: 2
             }
         ],
-        labels: sortedConsumption.map(h => {
-            const d = new Date(h.date).toISOString().split('T')[0];
-            const [year, month, day] = d.split('-');
-            return `${day}/${month}/${year}`;
-        })
+        labels: chartLabels
     };
 
     // Chart Data - Maintenance
@@ -581,6 +767,14 @@ export class HomePage implements OnInit, OnDestroy {
     return [];
   }
 
+  podeEditar(item: any): boolean {
+    return ['supply', 'maintenance', 'consumption', 'trip', 'vehicle-add'].includes(item.type);
+  }
+
+  podeApagar(item: any): boolean {
+    return ['supply', 'maintenance', 'consumption', 'trip', 'expense', 'income'].includes(item.type);
+  }
+
   async editHistoryItem(item: any) {
     if (item.type === 'supply') {
       await this.openSupplyModal(item.data, item.vehicle.plate);
@@ -588,14 +782,110 @@ export class HomePage implements OnInit, OnDestroy {
       await this.openMaintenanceModal(item.data, item.vehicle.plate);
     } else if (item.type === 'consumption') {
       await this.openConsumptionModal(item.data, item.vehicle.plate);
+    } else if (item.type === 'trip') {
+      this.router.navigate(['/tabs/calculator'], { queryParams: { plate: item.vehicle.plate, view: 'trip', editTripId: item.data?.id } });
+    } else if (item.type === 'expense') {
+      this.router.navigate(['/expense-history'], { queryParams: { plate: item.vehicle.plate } });
+    } else if (item.type === 'income') {
+      this.router.navigate(['/income-history'], { queryParams: { plate: item.vehicle.plate } });
+    } else if (item.type === 'vehicle-add') {
+      this.router.navigate(['/tabs/vehicles/form', item.vehicle.plate]);
     }
   }
 
-  toggleHistory() {
-    this.showAllHistory = !this.showAllHistory;
+  async removeHistoryItem(item: any) {
+    const alert = await this.alertCtrl.create({
+      header: 'Confirmar exclusão',
+      message: 'Deseja realmente excluir este registro?',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Excluir',
+          role: 'destructive',
+          handler: () => {
+            let removed = false;
+            if (item.type === 'supply' && item.data?.id) {
+              removed = this.vehicleService.removerAbastecimento(item.vehicle.plate, item.data.id);
+            } else if (item.type === 'maintenance' && item.data?.id) {
+              removed = this.vehicleService.removerManutencao(item.vehicle.plate, item.data.id);
+            } else if (item.type === 'consumption' && item.data?.id) {
+              removed = this.vehicleService.removerConsumo(item.vehicle.plate, item.data.id);
+            } else if (item.type === 'trip' && item.data?.id) {
+              removed = this.vehicleService.removerViagem(item.vehicle.plate, item.data.id);
+            } else if (item.type === 'expense' && item.data?.id) {
+              removed = this.vehicleService.removerDespesa(item.vehicle.plate, item.data.id);
+            } else if (item.type === 'income' && item.data?.id) {
+              removed = this.vehicleService.removerReceita(item.vehicle.plate, item.data.id);
+            }
+            if (removed) {
+              this.updateAllHistory();
+              this.updateSummary();
+              this.toastCtrl.create({
+                message: 'Registro removido com sucesso.',
+                duration: 1800,
+                color: 'success',
+                position: 'bottom'
+              }).then(t => t.present());
+            } else {
+              this.toastCtrl.create({
+                message: 'Não foi possível remover o registro.',
+                duration: 2000,
+                color: 'danger',
+                position: 'bottom'
+              }).then(t => t.present());
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  handleRedirect(plate?: string): boolean {
+    if (this.returnSource === 'vehicles') {
+      this.returnSource = null;
+      if (plate) {
+        this.router.navigate(['/tabs/vehicles/acoes', plate]);
+      } else {
+        this.router.navigate(['/tabs/vehicles']);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private async ensureVehiclesBeforeAction(actionLabel: string): Promise<boolean> {
+    if (this.vehicles && this.vehicles.length > 0) {
+      return true;
+    }
+
+    const alert = await this.alertCtrl.create({
+      header: 'Cadastre um veículo',
+      message: `Para ${actionLabel}, cadastre primeiro um veículo no menu Veículos.`,
+      buttons: [
+        {
+          text: 'Cadastrar Veículo',
+          handler: () => {
+            this.router.navigate(['/tabs/vehicles/form']);
+          }
+        },
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        }
+      ]
+    });
+    await alert.present();
+
+    return false;
   }
 
   async openSupplyModal(editingSupply?: Supply, vehiclePlate?: string): Promise<boolean> {
+    const canProceed = await this.ensureVehiclesBeforeAction('registrar um abastecimento');
+    if (!canProceed) {
+      return false;
+    }
+
     const modal = await this.modalCtrl.create({
       component: SupplyModalComponent,
       componentProps: {
@@ -609,6 +899,7 @@ export class HomePage implements OnInit, OnDestroy {
 
     const { data } = await modal.onWillDismiss();
     if (data && data.saved) {
+      this.vehicles = this.vehicleService.getVehiclesSnapshot();
       this.updateAllHistory();
       this.updateSummary();
     }
@@ -616,10 +907,15 @@ export class HomePage implements OnInit, OnDestroy {
       this.router.navigate(['/supply-history']);
       return true;
     }
-    return this.handleRedirect();
+    return this.handleRedirect(vehiclePlate || this.selectedVehiclePlate);
   }
 
   async openConsumptionModal(editingRecord?: ConsumptionRecord, vehiclePlate?: string): Promise<boolean> {
+    const canProceed = await this.ensureVehiclesBeforeAction('calcular consumo');
+    if (!canProceed) {
+      return false;
+    }
+
     const modal = await this.modalCtrl.create({
       component: ConsumptionModalComponent,
       componentProps: {
@@ -633,6 +929,7 @@ export class HomePage implements OnInit, OnDestroy {
 
     const { data } = await modal.onWillDismiss();
     if (data && data.saved) {
+      this.vehicles = this.vehicleService.getVehiclesSnapshot();
       this.updateAllHistory();
       this.updateSummary();
     }
@@ -640,10 +937,15 @@ export class HomePage implements OnInit, OnDestroy {
       this.router.navigate(['/consumption-history']);
       return true;
     }
-    return this.handleRedirect();
+    return this.handleRedirect(vehiclePlate || this.selectedVehiclePlate);
   }
 
   async openMaintenanceModal(editingMaintenance?: Maintenance, vehiclePlate?: string): Promise<boolean> {
+    const canProceed = await this.ensureVehiclesBeforeAction('registrar uma manutenção');
+    if (!canProceed) {
+      return false;
+    }
+
     const modal = await this.modalCtrl.create({
       component: MaintenanceModalComponent,
       componentProps: {
@@ -657,6 +959,7 @@ export class HomePage implements OnInit, OnDestroy {
 
     const { data } = await modal.onWillDismiss();
     if (data && data.saved) {
+      this.vehicles = this.vehicleService.getVehiclesSnapshot();
       this.updateAllHistory();
       this.updateSummary();
     }
@@ -664,24 +967,7 @@ export class HomePage implements OnInit, OnDestroy {
       this.router.navigate(['/maintenance-history']);
       return true;
     }
-    return this.handleRedirect();
-  }
-
-  abrir_historico_abastecimentos() {
-    this.router.navigate(['/supply-history']);
-  }
-
-  abrir_historico_manutencoes() {
-    this.router.navigate(['/maintenance-history']);
-  }
-
-  handleRedirect(): boolean {
-    if (this.returnSource === 'vehicles') {
-      this.returnSource = null;
-      this.router.navigate(['/tabs/vehicles']);
-      return true;
-    }
-    return false;
+    return this.handleRedirect(vehiclePlate || this.selectedVehiclePlate);
   }
 
 }

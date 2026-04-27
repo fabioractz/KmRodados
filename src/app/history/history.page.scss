@@ -7,15 +7,60 @@ ion-content {
   font-size: 0.9rem;
   color: var(--ion-color-medium);
   margin-right: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.item-ordenacao {
+.item-filtros {
   --inner-padding-start: 8px;
   --inner-padding-end: 16px;
 }
 
-.lista-historico ion-item:nth-child(even) {
+.linha-filtros {
+  display: flex;
+  align-items: center;
+  column-gap: 12px;
+  width: 100%;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+/* Tipo e Ordenar por na mesma linha; cada um usa metade do espaço e não invade o outro */
+.item-filtros .filtro-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 50%;
+  overflow: hidden;
+}
+
+.item-filtros .filtro-label {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.item-filtros .filtro-select {
+  flex: 1 1 0;
+  min-width: 0;
+  --padding-start: 6px;
+  --padding-end: 4px;
+}
+
+.item-filtros ion-select::part(text) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lista-historico .grupo-historico:nth-child(even) .item-historico {
   --background: rgba(0, 0, 0, 0.02);
+}
+
+.lista-historico .grupo-historico:nth-child(even) .detalhes-historico-fora-item {
+  background-color: rgba(0, 0, 0, 0.02);
 }
 
 .lista-historico ion-item {
@@ -23,10 +68,127 @@ ion-content {
   --padding-end: 8px;
 }
 
-.tipo-veiculo {
-  font-size: 0.85rem;
+.lista-historico > .grupo-historico {
+  border-bottom: 1px solid var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
+}
+
+/* Cabeçalho com resumo como em Início → Registros recentes (altura conforme conteúdo) */
+.lista-historico ion-item.item-historico {
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  --inner-padding-top: 0;
+  --inner-padding-bottom: 0;
+  --min-height: 56px;
+  min-height: 56px;
+  height: auto;
+  max-height: none;
+  align-items: center;
+}
+
+:host ::ng-deep .lista-historico ion-item.item-historico::part(native) {
+  align-items: center;
+  min-height: 56px;
+  height: auto;
+  max-height: none;
+}
+
+.item-historico-clicavel {
+  cursor: pointer;
+}
+
+/*
+ * Conteúdo principal no slot default: só ion-label recebe flex:1 via shadow do ion-item.
+ * Este div replica o layout e centra na vertical dentro do .input-wrapper (altura cheia).
+ */
+.lista-historico ion-item.item-historico .rotulo-cabecalho-historico {
+  flex: 1 1 0%;
+  width: min-content;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  align-self: center;
+}
+
+/* Chevron centrado na vertical em relação ao bloco título + descrição(ões) */
+.linha-cabecalho-historico {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.icone-expansao-historico {
+  flex-shrink: 0;
+  font-size: 1.15rem;
   color: var(--ion-color-medium);
-  margin-left: 4px;
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 22px;
+  min-height: 1.25rem;
+}
+
+.texto-cabecalho-historico {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.titulo-linha-historico {
+  margin: 0;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.descricao-resumo-historico {
+  margin: 0;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  color: var(--ion-color-medium);
+}
+
+.descricao-resumo-secundaria-historico {
+  font-size: 0.82rem;
+  margin-top: 2px;
+}
+
+.detalhes-expandidos-historico {
+  margin-top: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+/* Bloco abaixo da linha fixa; não altera a altura do cabeçalho */
+.detalhes-historico-fora-item {
+  padding-top: 10px;
+  padding-right: 16px;
+  padding-bottom: 12px;
+  padding-left: 56px;
+  margin-top: 0;
+}
+
+.detalhes-expandidos-historico p {
+  margin: 6px 0;
+}
+
+/* Ionic iOS: ::slotted([slot=start]) { margin-top/bottom: 2px } — remove para alinhar com o miolo */
+.lista-historico ion-item.item-historico div[slot='start'].caixa-icone-historico {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 .caixa-icone-historico {
@@ -37,19 +199,21 @@ ion-content {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  align-self: center;
+  margin-top: 0;
 }
 
 .caixa-icone-historico ion-icon {
   font-size: 1.4rem;
-  color: #ffffff;
+  color: #ffffff !important;
 }
 
 .caixa-icone-abastecimento {
-  background-color: var(--ion-color-success-shade);
+  background-color: #ffc409;
 }
 
 .caixa-icone-manutencao {
-  background-color: var(--ion-color-danger-shade);
+  background-color: #e65100;
 }
 
 .caixa-icone-consumo {
@@ -57,9 +221,62 @@ ion-content {
 }
 
 .caixa-icone-viagem {
-  background-color: var(--ion-color-warning-shade);
+  /* Ícone de viagens em azul */
+  background-color: #3880ff;
 }
 
 .caixa-icone-veiculo {
   background-color: var(--ion-color-tertiary-shade);
+}
+
+.caixa-icone-despesa {
+  background-color: #eb445a;
+}
+
+.caixa-icone-receita {
+  /* Verde dinheiro para receitas */
+  background-color: #1f7a3a;
+}
+
+/*
+ * ion-item (MD) pode aplicar align-self: flex-start em [slot=end] com .item-multi-line;
+ * forçamos centro no eixo vertical do .item-inner.
+ */
+.lista-historico ion-item.item-historico ion-buttons.botoes-acao[slot='end'] {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  align-self: center !important;
+  align-items: center !important;
+}
+
+.botoes-acao {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: 0;
+  margin-top: 0;
+  min-width: auto;
+}
+
+.botoes-acao ion-button {
+  margin: 0 0 0 4px;
+  height: 44px;
+  width: 44px;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+.botoes-acao ion-button:last-child {
+  margin-right: -8px;
+}
+
+.botoes-acao ion-button ion-icon {
+  font-size: 24px;
+}
+
+.botao-menu-historico ion-icon {
+  font-size: 0.9rem;
 }

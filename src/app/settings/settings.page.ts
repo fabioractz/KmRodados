@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { VehicleService, Vehicle } from '../services/vehicle.service';
 import { AlertController, ToastController } from '@ionic/angular';
+import { environment } from '../../environments/environment';
 import { AdsService } from '../services/ads.service';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
@@ -41,9 +42,9 @@ export class SettingsPage implements OnInit {
   readonly homeCardsLabels: Record<string, string> = {
     summary: 'Resumo do Veículo',
     quickActions: 'Ações Rápidas',
-    consumption: 'Histórico de Consumo',
-    maintenance: 'Histórico de Manutenções',
-    history: 'Histórico'
+    consumption: 'Consumo',
+    maintenance: 'Manutenções',
+    history: 'Registros Recentes'
   };
   homeCardsEnabled: Record<string, boolean> = {
     summary: true,
@@ -213,7 +214,7 @@ export class SettingsPage implements OnInit {
       const corpo_escuro = document.body.classList.contains('dark');
 
       if (plataforma === 'android') {
-        await StatusBar.setOverlaysWebView({ overlay: false });
+        await StatusBar.setOverlaysWebView({ overlay: true });
         await StatusBar.setStyle({ style: corpo_escuro ? Style.Dark : Style.Light });
       } else if (plataforma === 'ios') {
         await StatusBar.setOverlaysWebView({ overlay: true });
@@ -255,14 +256,31 @@ export class SettingsPage implements OnInit {
 
   carregarVersaoApp() {
     App.getInfo().then(info => {
-      this.versao_app = info.version || '';
+      this.versao_app = info.version || (environment as any).version || '';
     }).catch(() => {
-      this.versao_app = '';
+      this.versao_app = (environment as any).version || '';
     });
   }
 
   async downloadBackup() {
-    const dados = JSON.stringify(this.vehicles, null, 2);
+    const vehicles = this.vehicleService.getVehiclesSnapshot();
+    const preferences: Record<string, string> = {
+      themeMode: localStorage.getItem('themeMode') || 'system',
+      primaryColor: localStorage.getItem('primaryColor') || '',
+      primaryColorContrast: localStorage.getItem('primaryColorContrast') || '',
+      primaryColorShade: localStorage.getItem('primaryColorShade') || '',
+      primaryColorTint: localStorage.getItem('primaryColorTint') || '',
+      home_card_order: localStorage.getItem('home_card_order') || '[]',
+      home_card_enabled: localStorage.getItem('home_card_enabled') || '{}'
+    };
+    const backup = {
+      version: 1,
+      exportDate: new Date().toISOString(),
+      app: 'Km Rodados',
+      vehicles,
+      preferences
+    };
+    const dados = JSON.stringify(backup, null, 2);
     const data_atual = new Date().toISOString().split('T')[0];
     const nome_arquivo = `kmrodados_backup_${data_atual}.json`;
     const plataforma = Capacitor.getPlatform();
