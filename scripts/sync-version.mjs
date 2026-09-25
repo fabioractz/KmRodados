@@ -36,11 +36,24 @@ function atualizar_ios(versao, codigo) {
   fs.writeFileSync(caminho_projeto, texto, 'utf8');
 }
 
+function atualizar_environments(versao) {
+  const env_dev = path.join(raiz, 'src', 'environments', 'environment.ts');
+  const env_prod = path.join(raiz, 'src', 'environments', 'environment.prod.ts');
+  [env_dev, env_prod].forEach(caminho => {
+    if (fs.existsSync(caminho)) {
+      let texto = fs.readFileSync(caminho, 'utf8');
+      texto = texto.replace(/version:\s*'[^']*'/, `version: '${versao}'`);
+      fs.writeFileSync(caminho, texto, 'utf8');
+    }
+  });
+}
+
 try {
   const versao = ler_versao_pacote();
   const codigo = calcular_codigo_versao(versao);
   atualizar_android(versao, codigo);
   atualizar_ios(versao, codigo);
+  atualizar_environments(versao);
   console.log(`Versão sincronizada: ${versao} (code/build ${codigo})`);
   process.exit(0);
 } catch (erro) {

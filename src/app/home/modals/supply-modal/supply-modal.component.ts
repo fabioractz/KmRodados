@@ -1,9 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnInit, ViewChild } from '@angular/core';
 import { ModalController, AlertController, ToastController } from '@ionic/angular';
 import { VehicleService, Vehicle, Supply } from '../../../services/vehicle.service';
 import { ServicoAjudaOdometro } from '../../../services/ajuda-odometro.service';
 import { Router } from '@angular/router';
 import { GasStationService, PostoCombustivel } from '../../../services/gas-station.service';
+import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
 import { firstValueFrom } from 'rxjs';
 
@@ -46,7 +47,27 @@ export class SupplyModalComponent implements OnInit {
 
   isEditing: boolean = false;
 
+  @ViewChild('campoPosto') campoPosto?: ElementRef<HTMLElement>;
+  campoPostoAtivo = false;
+
+  @HostListener('document:pointerdown', ['$event'])
+  @HostListener('document:focusin', ['$event'])
+  aoInteragirForaDoPosto(event: Event) {
+    if (!this.campoPosto?.nativeElement || !event.composedPath().includes(this.campoPosto.nativeElement)) {
+      this.fecharListaPostos();
+    }
+  }
+
+  fecharListaPostos() {
+    this.campoPostoAtivo = false;
+    this.exibindoListaPostos = false;
+  }
+
+  precisaoLocalizacao: number | null = null;
+  postoSelecionado: PostoCombustivel | null = null;
   postosProximos: PostoCombustivel[] = [];
+  private postosAtualizadosEm = 0;
+  private buscaPostosEmAndamento?: Promise<PostoCombustivel[]>;
   exibindoListaPostos: boolean = false;
   exibindoCarregandoPostos: boolean = false;
   mensagemErroPostos: string | null = null;
@@ -112,7 +133,7 @@ export class SupplyModalComponent implements OnInit {
     this.horaAbastecimento = isoLocal;
 
     this.gasStation = supply.gasStation || '';
-    this.initialOdometer = supply.initialOdometer || null;
+    this.initialOdometer = supply.initialOdometer ?? supply.odometer ?? supply.finalOdometer ?? null;
     this.initialOdometerStr = this.initialOdometer ? new Intl.NumberFormat('pt-BR').format(this.initialOdometer) : '';
     this.tipoAbastecimento = (supply as any).tipoAbastecimento || '';
     const litros = supply.liters;
@@ -148,65 +169,99 @@ export class SupplyModalComponent implements OnInit {
     return letra ? letra.toUpperCase() : 'P';
   }
 
-  private async buscarPostosProximos(): Promise<PostoCombustivel[]> {
-    let status = await Geolocation.checkPermissions();
-    if (status.location === 'denied' || status.location === 'prompt') {
-      status = await Geolocation.requestPermissions();
+  private buscarPostosProximos(): Promise<PostoCombustivel[]> {
+    // Opening the form and focusing the field can happen during the same lookup.
+    if (!this.buscaPostosEmAndamento) {
+      this.buscaPostosEmAndamento = this.localizarPostos().finally(() => {
+        this.buscaPostosEmAndamento = undefined;
+      });
     }
+    return this.buscaPostosEmAndamento;
+  }
 
-    if (status.location === 'denied') {
-      throw new Error('permissao-negada');
+  private async localizarPostos(): Promise<PostoCombustivel[]> {
+    try {
+      // On web, getCurrentPosition itself prompts for permission. The plugin's
+      // requestPermissions method is native-only (and checkPermissions is not
+      // supported by every browser).
+      if (Capacitor.isNativePlatform()) {
+        let status = await Geolocation.checkPermissions();
+        if (status.location === 'prompt' || status.location === 'prompt-with-rationale') {
+          status = await Geolocation.requestPermissions();
+        }
+        if (status.location !== 'granted' && status.coarseLocation !== 'granted') {
+          throw new Error('permissao-negada');
+        }
+      }
+      const posicao = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 25000,
+        maximumAge: 60000
+      });
+      this.precisaoLocalizacao = posicao.coords.accuracy;
+      try {
+        return await firstValueFrom(this.gasStationService.getNearbyStations(
+          posicao.coords.latitude, posicao.coords.longitude
+        ));
+      } catch {
+        throw new Error('servico-postos-indisponivel');
+      }
+    } catch (erro: any) {
+      const code = erro?.code;
+      if (code === 1 || code === 'OS-PLUG-GLOC-0003') throw new Error('permissao-negada');
+      if (code === 3 || code === 'OS-PLUG-GLOC-0010') throw new Error('localizacao-tempo-esgotado');
+      if (erro?.message === 'permissao-negada' || erro?.message === 'servico-postos-indisponivel') throw erro;
+      throw new Error('localizacao-indisponivel');
     }
+  }
 
-    const posicao = await Geolocation.getCurrentPosition({
-      enableHighAccuracy: true,
-      timeout: 15000
-    });
-
-    const latitude = posicao.coords.latitude;
-    const longitude = posicao.coords.longitude;
-
-    const postos = await firstValueFrom(
-      this.gasStationService.getNearbyStations(latitude, longitude)
-    );
-
-    return postos;
+  private mensagemFalhaPostos(erro: unknown): string {
+    const motivo = erro instanceof Error ? erro.message : '';
+    switch (motivo) {
+      case 'permissao-negada':
+        return 'Permita o acesso à localização nas configurações do navegador ou do aparelho para buscar postos próximos. Você também pode digitar o posto.';
+      case 'localizacao-tempo-esgotado':
+        return 'A localização demorou para responder. Tente novamente ou digite o posto.';
+      case 'servico-postos-indisponivel':
+        return 'Os servidores de postos estão indisponíveis no momento. Aguarde 30 segundos e tente novamente, ou digite o posto.';
+      default:
+        return 'Não foi possível obter sua localização. Verifique se a localização do aparelho está ativada. Você também pode digitar o posto.';
+    }
   }
 
   private async preencherPostoMaisProximo() {
-    if (this.isEditing || this.gasStation) {
-      return;
-    }
-
-    try {
-      const postos = await this.buscarPostosProximos();
-      this.postosProximos = postos;
-      if (this.postosProximos.length > 0) {
-        this.gasStation = this.postosProximos[0].name;
-      }
-    } catch (_erro) {
-    }
+    if (this.isEditing || this.gasStation) return;
+    await this.aoFocarCampoPosto(false, false);
   }
 
-  async aoFocarCampoPosto() {
-    if (this.exibindoCarregandoPostos) {
+  formatarDistancia(metros: number): string {
+    return metros < 1000 ? `${Math.round(metros)} m` : `${(metros / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} km`;
+  }
+
+  possivelmenteNoPosto(posto: PostoCombustivel): boolean {
+    return this.precisaoLocalizacao != null && this.precisaoLocalizacao > 0 &&
+      this.precisaoLocalizacao <= 50 && posto.distanceMeters <= 75;
+  }
+
+  async aoFocarCampoPosto(atualizar = false, exibir = true) {
+    if (exibir) this.campoPostoAtivo = true;
+    if (!atualizar && this.postosProximos.length && Date.now() - this.postosAtualizadosEm < 60000) {
+      this.exibindoListaPostos = this.campoPostoAtivo;
       return;
     }
-
+    if (this.exibindoCarregandoPostos) return;
     this.mensagemErroPostos = null;
     this.exibindoListaPostos = false;
     this.exibindoCarregandoPostos = true;
-
     try {
-      const postos = await this.buscarPostosProximos();
-      this.postosProximos = postos;
-      this.exibindoListaPostos = this.postosProximos.length > 0;
-    } catch (erro: any) {
-      if (erro && erro.message === 'permissao-negada') {
-        this.mensagemErroPostos = 'Permissão de localização negada. Você pode digitar o posto manualmente.';
-      } else {
-        this.mensagemErroPostos = 'Não foi possível buscar postos próximos. Verifique sua conexão e tente novamente.';
+      this.postosProximos = await this.buscarPostosProximos();
+      this.postosAtualizadosEm = Date.now();
+      this.exibindoListaPostos = this.campoPostoAtivo && this.postosProximos.length > 0;
+      if (!this.postosProximos.length) {
+        this.mensagemErroPostos = 'Nenhum posto cadastrado no mapa em um raio de 3 km. Você pode digitar o nome do posto.';
       }
+    } catch (erro) {
+      this.mensagemErroPostos = this.mensagemFalhaPostos(erro);
     } finally {
       this.exibindoCarregandoPostos = false;
     }
@@ -214,11 +269,13 @@ export class SupplyModalComponent implements OnInit {
 
   selecionarPosto(posto: PostoCombustivel) {
     this.gasStation = posto.name;
-    this.exibindoListaPostos = false;
+    this.postoSelecionado = posto;
+    this.fecharListaPostos();
   }
 
   aoDigitarPosto() {
-    this.exibindoListaPostos = false;
+    this.postoSelecionado = null;
+    this.exibindoListaPostos = this.campoPostoAtivo && this.postosProximos.length > 0;
   }
 
   get missingFields(): string[] {
@@ -372,6 +429,7 @@ export class SupplyModalComponent implements OnInit {
     const newSupply: Supply = {
       id: this.isEditing ? this.editingSupply!.id : undefined,
       date: localDate,
+      createdAt: this.editingSupply?.createdAt,
       gasStation: this.gasStation,
       initialOdometer: this.initialOdometer ?? undefined,
       tipoAbastecimento: this.tipoAbastecimento || undefined,

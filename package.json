@@ -1,6 +1,6 @@
 {
   "name": "ionic-app-base",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
   "scripts": {
@@ -16,7 +16,8 @@
     "sync:ios": "npx cap sync ios && node scripts/patch-admob.mjs",
     "sync:all": "npx cap sync && node scripts/patch-admob.mjs",
     "release:android": "npm run version:sync && npm run build -- --configuration production && npm run sync:android",
-    "release:ios": "npm run version:sync && npm run build -- --configuration production && npm run sync:ios"
+    "release:ios": "npm run version:sync && npm run build -- --configuration production && npm run sync:ios",
+    "capacitor:sync:after": "node scripts/patch-admob.mjs && node scripts/sync-ios-icons.mjs"
   },
   "private": true,
   "dependencies": {
@@ -36,7 +37,7 @@
     "@capacitor/filesystem": "^8.1.2",
     "@capacitor/geolocation": "^8.1.0",
     "@capacitor/haptics": "8.0.0",
-    "@capacitor/ios": "^8.0.2",
+    "@capacitor/ios": "8.0.2",
     "@capacitor/keyboard": "8.0.0",
     "@capacitor/local-notifications": "^8.0.1",
     "@capacitor/share": "^8.0.1",

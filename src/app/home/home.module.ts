@@ -15,6 +15,7 @@ import { BaseChartDirective } from 'ng2-charts';
 @NgModule({
   imports: [
     CommonModule,
+    ConsumptionModalComponent,
     FormsModule,
     IonicModule,
     HomePageRoutingModule,
@@ -23,7 +24,6 @@ import { BaseChartDirective } from 'ng2-charts';
   declarations: [
     HomePage,
     SupplyModalComponent,
-    ConsumptionModalComponent,
     MaintenanceModalComponent,
     TripModalComponent
   ]

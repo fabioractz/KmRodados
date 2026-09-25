@@ -1,217 +1,94 @@
-<ion-header mode="ios">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="close()">
-        <ion-icon slot="start" name="chevron-back"></ion-icon>
-        Voltar
-      </ion-button>
-    </ion-buttons>
-    <ion-title>{{ isEditing ? 'Editar Abastecimento' : 'Novo Abastecimento' }}</ion-title>
-  </ion-toolbar>
+<ion-header class="form-header" mode="ios">
+  <ion-toolbar><ion-buttons slot="start"><ion-button (click)="close()"><ion-icon slot="start" name="chevron-back" aria-hidden="true"></ion-icon>Voltar</ion-button></ion-buttons><span class="form-brand" slot="end">KM RODADOS</span></ion-toolbar>
 </ion-header>
+<ion-content class="form-content">
+  <main class="vehicle-form">
+    <h1>{{ isEditing ? 'Editar abastecimento' : 'Novo abastecimento' }}</h1>
+    <p class="form-description">Registre a parada. Acompanhe seu consumo.</p>
+    <div class="validation-card" *ngIf="hasValidationErrors" role="alert"><strong>Confira os campos obrigatórios:</strong><ul><li *ngFor="let field of missingFields">{{ field }}</li></ul></div>
+    <div class="form-vehicle" [class.required-field]="vehicleError">
+      <span class="vehicle-symbol"><ion-icon name="car-outline" aria-hidden="true"></ion-icon></span>
+      <div class="vehicle-identity">
+        <ion-select *ngIf="vehicles.length > 1; else singleVehicle" [(ngModel)]="selectedVehiclePlate" (ionChange)="vehicleError = false" aria-label="Veículo" interface="action-sheet" cancelText="Cancelar"><ion-select-option *ngFor="let v of vehicles" [value]="v.plate">{{ v.model }} ({{ v.plate | uppercase }})</ion-select-option></ion-select>
+        <ng-template #singleVehicle><strong>{{ vehicles[0]?.model || 'Nenhum veículo cadastrado' }}</strong></ng-template>
+        <span class="vehicle-plate">{{ selectedVehiclePlate | uppercase }}</span>
+      </div>
+    </div>
+    <div class="form-grid">
+<div class="form-field">
+  <span class="field-label">Odômetro · km <button type="button" class="field-help" aria-label="Ajuda sobre o odômetro" (click)="ajuda_odometro.mostrarAjudaOdometro($event)"><ion-icon name="help-circle-outline" aria-hidden="true"></ion-icon></button></span>
+  <ion-input type="tel" inputmode="decimal" aria-label="Odômetro · km" [(ngModel)]="initialOdometerStr" (ionInput)="formatOdometer($event)" placeholder="0" ></ion-input>
+</div>
+<div class="form-field" [class.required-field]="dateError"><span class="field-label">Data *</span><div class="date-control"><ion-datetime-button datetime="supply-data" aria-label="Data do registro"></ion-datetime-button></div></div>
+<ion-modal [keepContentsMounted]="true"><ng-template><ion-datetime id="supply-data" presentation="date" locale="pt-BR" [formatOptions]="opcoesFormatoData" [(ngModel)]="supplyDate" (ionChange)="dateError = false"></ion-datetime></ng-template></ion-modal>
+    </div>
+    <div class="form-field" [class.required-field]="tipoAbastecimentoError"><span class="field-label">Combustível *</span><ion-select [(ngModel)]="tipoAbastecimento" (ionChange)="tipoAbastecimentoError = false" aria-label="Combustível" placeholder="Selecione o combustível" interface="action-sheet" cancelText="Cancelar"><ion-select-option *ngFor="let opcao of opcoesAbastecimento" [value]="opcao">{{ opcao }}</ion-select-option></ion-select></div>
+    <h2>Valores do abastecimento</h2>
+    <div class="total-highlight">
+<div class="form-field" [class.required-field]="totalValueError">
+  <span class="field-label">Valor total *</span>
+  <ion-input type="tel" inputmode="decimal" aria-label="Valor total *" [(ngModel)]="totalValueStr" (ionInput)="formatCurrency($event)" placeholder="R$ 0,00" ></ion-input>
+</div>
+    </div>
+    <div class="form-grid">
+<div class="form-field" [class.required-field]="precoPorLitroError">
+  <span class="field-label">Preço por litro · R$ *</span>
+  <ion-input type="tel" inputmode="decimal" aria-label="Preço por litro · R$ *" [(ngModel)]="precoPorLitroStr" (ionInput)="aoAlterarPrecoPorLitro($event)" placeholder="R$ 0,00" ></ion-input>
+</div>
+<div class="form-field">
+  <span class="field-label">Quantidade · L</span>
+  <ion-input type="tel" inputmode="decimal" aria-label="Quantidade · L" [(ngModel)]="liters" placeholder="0,00" ></ion-input>
+</div>
+    </div>
+    <div class="tank-control"><ion-toggle [(ngModel)]="tanqueCompleto" justify="space-between"><span>Completei o tanque</span><small>Usar como limite de um ciclo de consumo.</small></ion-toggle></div>
+    <button class="more-fields" type="button" [attr.aria-expanded]="mostrarMaisCampos" (click)="mostrarMaisCampos = !mostrarMaisCampos"><ion-icon [name]="mostrarMaisCampos ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></ion-icon>Hora, motorista e observações</button>
+    <section *ngIf="mostrarMaisCampos" class="additional-fields" aria-label="Detalhes do abastecimento">
+<div class="form-field"><span class="field-label">Hora</span><div class="date-control"><ion-datetime-button datetime="supply-hora" aria-label="Hora do registro"></ion-datetime-button></div></div>
+<ion-modal [keepContentsMounted]="true"><ng-template><ion-datetime id="supply-hora" presentation="time" locale="pt-BR" [(ngModel)]="horaAbastecimento"></ion-datetime></ng-template></ion-modal>
+    <div #campoPosto class="station-field form-field" (keydown.escape)="fecharListaPostos()">
+      <span class="field-label">Posto</span>
+      <div class="station-input" [attr.aria-busy]="exibindoCarregandoPostos">
+        <ion-input aria-label="Posto" [(ngModel)]="gasStation" placeholder="Nome do posto"
+          (ionFocus)="aoFocarCampoPosto()" (ionInput)="aoDigitarPosto()"></ion-input>
+        <span class="station-loading" *ngIf="exibindoCarregandoPostos" role="status" aria-label="Buscando postos próximos">
+          <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+        </span>
+      </div>
+      <div class="station-error" *ngIf="campoPostoAtivo && mensagemErroPostos" role="status">
+        <span>{{ mensagemErroPostos }}</span>
+        <button type="button" (click)="aoFocarCampoPosto(true)" [disabled]="exibindoCarregandoPostos">Tentar novamente</button>
+      </div>
+      <div *ngIf="exibindoListaPostos" class="station-results">
+        <div class="station-results-heading">Postos próximos</div>
+        <ul class="lista-posto-autocomplete" aria-label="Postos próximos">
+          <li *ngFor="let posto of postosProximos">
+            <button type="button" class="station-option" (click)="selecionarPosto(posto)"
+              [class.station-option-selected]="postoSelecionado === posto">
+              <span class="station-symbol" aria-hidden="true"><ion-icon name="location-outline"></ion-icon></span>
+              <span class="station-info">
+                <span class="nome-posto">{{ posto.name }}</span>
+                <span class="endereco-posto" *ngIf="posto.address">{{ posto.address }}</span>
+                <span class="station-presence" *ngIf="possivelmenteNoPosto(posto)">Perto de você</span>
+              </span>
+              <span class="station-distance">{{ formatarDistancia(posto.distanceMeters) }}</span>
+            </button>
+          </li>
+        </ul>
+        <small class="station-credit">© OpenStreetMap</small>
+      </div>
+    </div>
 
-<ion-content>
-  <ion-header collapse="condense" mode="ios">
-    <ion-toolbar>
-      <ion-title size="large">{{ isEditing ? 'Editar Abastecimento' : 'Novo Abastecimento' }}</ion-title>
-    </ion-toolbar>
-  </ion-header>
 
-  <div class="ion-padding">
-    <ion-card *ngIf="hasValidationErrors" class="validation-card">
-    <ion-card-content>
-      <p><strong>Campos obrigatórios não preenchidos:</strong></p>
-      <ul>
-        <li *ngFor="let field of missingFields">{{ field }}</li>
-      </ul>
-    </ion-card-content>
-  </ion-card>
-
-  <!-- 1. Veículo -->
-  <ion-item [class.required-field]="vehicleError">
-    <ion-select [(ngModel)]="selectedVehiclePlate" (ionChange)="vehicleError = false" label="Veículo *" label-placement="floating">
-      <ion-select-option *ngFor="let v of vehicles" [value]="v.plate">{{ v.model }} ({{ v.plate | uppercase }})</ion-select-option>
-    </ion-select>
-  </ion-item>
-
-  <!-- 2. Odômetro -->
-  <ion-item class="odometer-item">
-    <ion-input
-      type="tel"
-      inputmode="decimal"
-      label="Odômetro (Km)"
-      label-placement="floating"
-      [(ngModel)]="initialOdometerStr"
-      (ionInput)="formatOdometer($event)"
-      class="odometer-input">
-    </ion-input>
-    <span
-      slot="end"
-      class="icone-ajuda-odometro"
-      tabindex="0"
-      (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
-  </ion-item>
-
-  <!-- 3. Tipo de Abastecimento -->
-  <ion-item [class.required-field]="tipoAbastecimentoError">
-    <ion-select [(ngModel)]="tipoAbastecimento" (ionChange)="tipoAbastecimentoError = false" label="Tipo de Abastecimento *" label-placement="floating" placeholder="Escolha o tipo de Combustível" interface="action-sheet">
-      <ion-select-option *ngFor="let opcao of opcoesAbastecimento" [value]="opcao">{{ opcao }}</ion-select-option>
-    </ion-select>
-  </ion-item>
-
-  <!-- 4, 5, 6. Grid: Preço, Valor, Litros -->
-  <ion-grid>
-    <ion-row>
-      <ion-col size="4">
-        <ion-item [class.required-field]="precoPorLitroError">
-          <ion-input
-            type="tel"
-            inputmode="decimal"
-            label="Preço/L"
-            label-placement="floating"
-            [(ngModel)]="precoPorLitroStr"
-            (ionInput)="aoAlterarPrecoPorLitro($event)"
-            placeholder="R$ 0,00">
-          </ion-input>
-        </ion-item>
-      </ion-col>
-      <ion-col size="4">
-        <ion-item [class.required-field]="totalValueError">
-          <ion-input
-            type="tel"
-            inputmode="decimal"
-            label="Valor (R$)"
-            label-placement="floating"
-            [(ngModel)]="totalValueStr"
-            (ionInput)="formatCurrency($event)"
-            placeholder="R$ 0,00">
-          </ion-input>
-        </ion-item>
-      </ion-col>
-      <ion-col size="4">
-        <ion-item>
-          <ion-input
-            type="tel"
-            inputmode="decimal"
-            label="Litros"
-            label-placement="floating"
-            [(ngModel)]="liters">
-          </ion-input>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-
-  <!-- Switch: Completou o tanque? -->
-  <ion-item>
-    <ion-label>Completou o tanque?</ion-label>
-    <ion-toggle slot="end" [(ngModel)]="tanqueCompleto"></ion-toggle>
-  </ion-item>
-
-  <!-- Botão Mostrar mais/menos -->
-  <div class="ion-text-start ion-margin-vertical ion-padding-start">
-    <span 
-      (click)="mostrarMaisCampos = !mostrarMaisCampos" 
-      style="color: var(--ion-color-primary); cursor: pointer; text-decoration: underline;">
-      {{ mostrarMaisCampos ? '- Mostrar menos' : '+ Mostrar mais' }}
-    </span>
-  </div>
-
-  <!-- Campos Secundários -->
-  <div *ngIf="mostrarMaisCampos">
-    <!-- Data e Hora -->
-    <ion-grid>
-      <ion-row>
-        <ion-col size="7">
-          <ion-item class="datetime-item">
-            <ion-label position="fixed">Data *</ion-label>
-            <ion-datetime-button datetime="supply-data" slot="end"></ion-datetime-button>
-          </ion-item>
-        </ion-col>
-        <ion-col size="5">
-          <ion-item class="datetime-item">
-            <ion-label position="fixed">Hora</ion-label>
-            <ion-datetime-button datetime="supply-hora" slot="end"></ion-datetime-button>
-          </ion-item>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-    <ion-modal [keepContentsMounted]="true">
-      <ng-template>
-        <ion-datetime
-          id="supply-data"
-          presentation="date"
-          locale="pt-BR"
-          [formatOptions]="opcoesFormatoData"
-          [(ngModel)]="supplyDate"
-          (ionChange)="dateError = false">
-        </ion-datetime>
-      </ng-template>
-    </ion-modal>
-    <ion-modal [keepContentsMounted]="true">
-      <ng-template>
-        <ion-datetime
-          id="supply-hora"
-          presentation="time"
-          locale="pt-BR"
-          [(ngModel)]="horaAbastecimento">
-        </ion-datetime>
-      </ng-template>
-    </ion-modal>
-
-    <!-- Posto -->
-    <ion-item>
-      <ion-input
-        label="Posto"
-        label-placement="floating"
-        [(ngModel)]="gasStation"
-        placeholder="Nome do posto"
-        (ionFocus)="aoFocarCampoPosto()"
-        (ionInput)="aoDigitarPosto()">
-      </ion-input>
-    </ion-item>
-    <ion-item lines="none" *ngIf="exibindoCarregandoPostos">
-      <ion-label>Buscando postos próximos...</ion-label>
-      <ion-spinner slot="end" name="crescent"></ion-spinner>
-    </ion-item>
-    <ion-item lines="none" *ngIf="mensagemErroPostos">
-      <ion-label color="danger">{{ mensagemErroPostos }}</ion-label>
-    </ion-item>
-    <ion-list *ngIf="exibindoListaPostos" class="lista-posto-autocomplete">
-      <ion-item
-        button
-        detail="false"
-        *ngFor="let posto of postosProximos; let indice = index"
-        (click)="selecionarPosto(posto)"
-        [class.item-zebrado]="indice % 2 === 1">
-        <div slot="start" class="logo-posto" [ngClass]="obter_classe_logo_posto(posto)">
-          <span>{{ obter_texto_logo_posto(posto) }}</span>
-        </div>
-        <ion-label>
-          <div class="nome-posto">{{ posto.name }}</div>
-          <div class="endereco-posto">{{ posto.address || 'não informado' }}</div>
-        </ion-label>
-      </ion-item>
-    </ion-list>
-
-    <!-- Motorista -->
-    <ion-item>
-      <ion-input
-        label="Motorista"
-        label-placement="floating"
-        [(ngModel)]="motorista"
-        placeholder="Nome do motorista">
-      </ion-input>
-    </ion-item>
-
-    <!-- Observações -->
-    <ion-item>
-      <ion-textarea label="Observações" label-placement="floating" [(ngModel)]="observations"></ion-textarea>
-    </ion-item>
-  </div>
-
-  <ion-button expand="block" class="ion-margin-top" (click)="save()">
-      {{ isEditing ? 'Atualizar' : 'Salvar' }}
-    </ion-button>
-  </div>
+<div class="form-field">
+  <span class="field-label">Motorista</span>
+  <ion-input type="text" aria-label="Motorista" [(ngModel)]="motorista" placeholder="Nome do motorista" ></ion-input>
+</div>
+<div class="form-field">
+  <span class="field-label">Observações</span>
+  <ion-textarea rows="2" [autoGrow]="true" aria-label="Observações" [(ngModel)]="observations" placeholder="Algo que deseja lembrar?" ></ion-textarea>
+</div>
+    </section>
+    <ion-button expand="block" class="save-button" (click)="save()"><ion-icon name="checkmark-outline" slot="start" aria-hidden="true"></ion-icon>{{ isEditing ? 'Atualizar abastecimento' : 'Salvar abastecimento' }}</ion-button>
+    <p class="form-footnote">* Campos obrigatórios</p>
+  </main>
 </ion-content>

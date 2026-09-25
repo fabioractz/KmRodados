@@ -1,111 +1,40 @@
-<ion-header [translucent]="true" mode="ios">
-  <ion-toolbar>
-    <ion-title>Veículos</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="vehicles-content">
+  <main class="vehicles-layout">
+    <header class="vehicles-heading">
+      <div>
+        <p class="eyebrow">KM RODADOS</p>
+        <h1>Meus veículos</h1>
+        <p class="vehicle-count">{{ vehicles.length }} {{ vehicles.length === 1 ? 'veículo cadastrado' : 'veículos cadastrados' }}</p>
+      </div>
+      <button type="button" class="add-vehicle" aria-label="Adicionar veículo" (click)="toggleForm()">
+        <ion-icon name="add-outline" aria-hidden="true"></ion-icon>
+      </button>
+    </header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense" mode="ios">
-    <ion-toolbar>
-      <ion-title size="large">Veículos</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  <div class="ion-padding">
-    
-    <!-- Resumo Geral (Movido da Home) -->
-    <ion-card class="ion-margin-bottom">
-      <ion-card-header>
-        <ion-card-subtitle>Resumo Geral</ion-card-subtitle>
-        <ion-card-title>Minha Frota</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <h1 style="font-size: 3rem; margin: 10px 0;">{{ vehicles.length }}</h1>
-        <p>Veículos cadastrados</p>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Botão para abrir o formulário -->
-    <!-- (Removido daqui e movido para fora do div.ion-padding) -->
-    
-    
-
-    <div *ngIf="vehicles.length > 0 && !isFormVisible" class="ion-margin-top">
-      <h3>Meus Veículos</h3>
-      
-      <ion-card *ngFor="let vehicle of vehicles" class="ion-margin-bottom vehicle-card" (click)="abrirPaginaAcoesVeiculo(vehicle)">
-        <div class="vehicle-actions" role="toolbar" aria-label="Ações do veículo" aria-orientation="vertical" (click)="$event.stopPropagation()">
-          <ion-button
-            fill="clear"
-            (click)="setDefault(vehicle)"
-            [attr.aria-label]="vehicle.isDefault ? 'Veículo padrão' : 'Definir como veículo padrão'"
-            [attr.title]="vehicle.isDefault ? 'Veículo padrão' : 'Definir como veículo padrão'"
-            [attr.aria-pressed]="vehicle.isDefault"
-          >
-            <ion-icon [name]="vehicle.isDefault ? 'star' : 'star-outline'" [color]="vehicle.isDefault ? 'warning' : 'medium'" aria-hidden="true"></ion-icon>
-            <span class="sr-only">{{ vehicle.isDefault ? 'Veículo padrão' : 'Definir como veículo padrão' }}</span>
-          </ion-button>
-          <ion-button
-            fill="clear"
-            (click)="editVehicle(vehicle)"
-            [attr.aria-label]="'Editar ' + vehicle.model"
-            [attr.title]="'Editar ' + vehicle.model"
-          >
-            <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
-            <span class="sr-only">Editar {{ vehicle.model }}</span>
-          </ion-button>
-          <ion-button
-            fill="clear"
-            color="danger"
-            (click)="deleteVehicle(vehicle)"
-            [attr.aria-label]="'Excluir ' + vehicle.model"
-            [attr.title]="'Excluir ' + vehicle.model"
-          >
-            <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
-            <span class="sr-only">Excluir {{ vehicle.model }}</span>
-          </ion-button>
-        </div>
-        <ion-card-content>
-          <div class="vehicle-card-layout">
-            <div class="icon-cell">
-              <ion-icon [name]="getVehicleIcon(vehicle.type)" color="primary" size="large"></ion-icon>
-            </div>
-            <div class="title-cell">
-              <h2>{{ vehicle.model }}</h2>
-            </div>
-            <div class="details-cell">
-              <div class="vehicle-details">
-                <p><strong>Tipo:</strong> {{ getVehicleTypeName(vehicle.type) || '-' }}</p>
-                <p><strong>Placa:</strong> {{ vehicle.plate ? (vehicle.plate | uppercase) : '-' }}</p>
-                <p>
-                  <strong>Odômetro (Inicial):</strong>
-                  <span
-                    *ngIf="vehicle.odometer != null"
-                    class="icone-ajuda-odometro"
-                    tabindex="0"
-                    (click)="$event.stopPropagation(); ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
-                  {{ vehicle.odometer != null ? (vehicle.odometer | number) + ' km' : '-' }}
-                </p>
-                <p><strong>Observações:</strong> {{ vehicle.observations ? vehicle.observations : '-' }}</p>
-              </div>
-            </div>
+    <section class="vehicle-grid" aria-label="Veículos cadastrados" *ngIf="vehicles.length; else emptyVehicles">
+      <article class="vehicle-card" *ngFor="let vehicle of vehicles">
+        <button type="button" class="vehicle-open" (click)="abrirPaginaAcoesVeiculo(vehicle)" [attr.aria-label]="'Ver veículo ' + vehicle.model + ', placa ' + vehicle.plate">
+          <div class="vehicle-identity">
+            <span class="vehicle-symbol"><ion-icon [name]="getVehicleIcon(vehicle.type)" aria-hidden="true"></ion-icon></span>
+            <div class="vehicle-name"><h2>{{ vehicle.model }}</h2><span class="vehicle-plate">{{ vehicle.plate | uppercase }}</span></div>
           </div>
-          <div class="vehicle-totals">
-            <span class="income-total">
-              Receitas: {{ getTotalIncomes(vehicle) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-            </span>
-            <span class="expense-total">
-              Despesas: {{ getTotalExpenses(vehicle) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-            </span>
-          </div>
-        </ion-card-content>
-      </ion-card>
-    </div>
-  </div>
+          <div class="vehicle-status"><span class="default-badge" *ngIf="vehicle.isDefault"><ion-icon name="star" aria-hidden="true"></ion-icon>Principal</span></div>
+          <div class="vehicle-odometer"><span>Odômetro atual</span><strong>{{ getCurrentOdometer(vehicle) | number:'1.0-0' }} <small>km</small></strong></div>
+          <div class="vehicle-details-link"><span>Ver veículo</span><ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon></div>
+        </button>
+        <button type="button" class="vehicle-menu" [attr.aria-label]="'Ações de ' + vehicle.model" (click)="openVehicleMenu(vehicle)">
+          <ion-icon name="ellipsis-horizontal" aria-hidden="true"></ion-icon>
+        </button>
+      </article>
+    </section>
 
-  <!-- Botão para abrir o formulário (Posicionamento Fixo) -->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="ion-margin-bottom ion-margin-end">
-    <ion-fab-button (click)="toggleForm()" color="light">
-      <ion-icon [name]="isFormVisible ? 'remove' : 'add'"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+    <ng-template #emptyVehicles>
+      <section class="empty-vehicles">
+        <span class="vehicle-symbol"><ion-icon name="car-outline" aria-hidden="true"></ion-icon></span>
+        <h2>Sua garagem começa aqui</h2>
+        <p>Cadastre um veículo para acompanhar abastecimentos, consumo e manutenções.</p>
+        <ion-button (click)="toggleForm()">Adicionar veículo</ion-button>
+      </section>
+    </ng-template>
+  </main>
 </ion-content>

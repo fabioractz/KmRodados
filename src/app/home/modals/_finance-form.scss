@@ -1,0 +1,37 @@
+.finance-form ion-item {
+  --background: var(--form-paper);
+  --color: var(--form-text);
+  --border-width: 0;
+  --inner-border-width: 0;
+  --padding-start: 14px;
+  --inner-padding-end: 14px;
+  --min-height: 64px;
+  border: 1px solid var(--form-line);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: none;
+}
+.finance-form ion-input, .finance-form ion-textarea, .finance-form ion-select {
+  color: var(--form-text);
+  font-size: 16px;
+  --highlight-color-focused: var(--form-accent);
+  --highlight-color-valid: transparent;
+}
+.finance-form ion-select { width: 100%; }
+.finance-form ion-select::part(label), .finance-form ion-input::part(label), .finance-form ion-textarea::part(label) { color: var(--form-muted); font-size: 12px; }
+.finance-form ion-item.required-field { outline: 2px solid var(--ion-color-danger); outline-offset: 1px; }
+.finance-form ion-item.required-field ion-input, .finance-form ion-item.required-field ion-select { outline: none; }
+.finance-form ion-item:focus-within { border-color: var(--form-accent); }
+.finance-form ion-list { background: transparent; padding: 0; margin-top: 24px; }
+.finance-form ion-list-header { color: var(--form-text); padding-left: 0; }
+.finance-form ion-grid { padding: 0; }
+.finance-form ion-col { padding: 0 5px; }
+.finance-form ion-col:first-child { padding-left: 0; }
+.finance-form ion-col:last-child { padding-right: 0; }
+.finance-form .datetime-item { --padding-start: 8px; --inner-padding-end: 8px; }
+.finance-form .datetime-item::part(native) { flex-wrap: wrap; }
+.finance-form .datetime-item ion-label { flex: 0 0 100%; max-width: 100%; color: var(--form-muted); font-size: 12px; margin-bottom: 0; }
+.finance-form .datetime-item ion-datetime-button { margin: 4px 0 8px; }
+.finance-form .validation-card { margin: 0 0 20px; box-shadow: none; }
+.finance-form .validation-card ion-card-content { padding: 0; color: var(--form-text); }
+.finance-form ion-buttons ion-icon { color: inherit; }

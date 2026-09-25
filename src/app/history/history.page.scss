@@ -1,282 +1,37 @@
-ion-content {
-  --padding-start: 0;
-  --padding-end: 0;
-}
-
-.texto-ordenar-por {
-  font-size: 0.9rem;
-  color: var(--ion-color-medium);
-  margin-right: 8px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.item-filtros {
-  --inner-padding-start: 8px;
-  --inner-padding-end: 16px;
-}
-
-.linha-filtros {
-  display: flex;
-  align-items: center;
-  column-gap: 12px;
-  width: 100%;
-  flex-wrap: nowrap;
-  min-width: 0;
-}
-
-/* Tipo e Ordenar por na mesma linha; cada um usa metade do espaço e não invade o outro */
-.item-filtros .filtro-inline {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 1 1 0;
-  min-width: 0;
-  max-width: 50%;
-  overflow: hidden;
-}
-
-.item-filtros .filtro-label {
-  font-size: 0.85rem;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.item-filtros .filtro-select {
-  flex: 1 1 0;
-  min-width: 0;
-  --padding-start: 6px;
-  --padding-end: 4px;
-}
-
-.item-filtros ion-select::part(text) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.lista-historico .grupo-historico:nth-child(even) .item-historico {
-  --background: rgba(0, 0, 0, 0.02);
-}
-
-.lista-historico .grupo-historico:nth-child(even) .detalhes-historico-fora-item {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-.lista-historico ion-item {
-  --padding-start: 16px;
-  --padding-end: 8px;
-}
-
-.lista-historico > .grupo-historico {
-  border-bottom: 1px solid var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
-}
-
-/* Cabeçalho com resumo como em Início → Registros recentes (altura conforme conteúdo) */
-.lista-historico ion-item.item-historico {
-  --padding-top: 10px;
-  --padding-bottom: 10px;
-  --inner-padding-top: 0;
-  --inner-padding-bottom: 0;
-  --min-height: 56px;
-  min-height: 56px;
-  height: auto;
-  max-height: none;
-  align-items: center;
-}
-
-:host ::ng-deep .lista-historico ion-item.item-historico::part(native) {
-  align-items: center;
-  min-height: 56px;
-  height: auto;
-  max-height: none;
-}
-
-.item-historico-clicavel {
-  cursor: pointer;
-}
-
-/*
- * Conteúdo principal no slot default: só ion-label recebe flex:1 via shadow do ion-item.
- * Este div replica o layout e centra na vertical dentro do .input-wrapper (altura cheia).
- */
-.lista-historico ion-item.item-historico .rotulo-cabecalho-historico {
-  flex: 1 1 0%;
-  width: min-content;
-  max-width: 100%;
-  min-width: 0;
-  margin: 0;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  align-self: center;
-}
-
-/* Chevron centrado na vertical em relação ao bloco título + descrição(ões) */
-.linha-cabecalho-historico {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-}
-
-.icone-expansao-historico {
-  flex-shrink: 0;
-  font-size: 1.15rem;
-  color: var(--ion-color-medium);
-  margin-top: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  align-self: center;
-  width: 22px;
-  min-height: 1.25rem;
-}
-
-.texto-cabecalho-historico {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 2px;
-}
-
-.titulo-linha-historico {
-  margin: 0;
-  padding: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.25;
-}
-
-.descricao-resumo-historico {
-  margin: 0;
-  padding: 0;
-  font-size: 0.875rem;
-  line-height: 1.35;
-  color: var(--ion-color-medium);
-}
-
-.descricao-resumo-secundaria-historico {
-  font-size: 0.82rem;
-  margin-top: 2px;
-}
-
-.detalhes-expandidos-historico {
-  margin-top: 0;
-  padding-top: 10px;
-  border-top: 1px solid var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
-  font-size: 0.9rem;
-  line-height: 1.45;
-}
-
-/* Bloco abaixo da linha fixa; não altera a altura do cabeçalho */
-.detalhes-historico-fora-item {
-  padding-top: 10px;
-  padding-right: 16px;
-  padding-bottom: 12px;
-  padding-left: 56px;
-  margin-top: 0;
-}
-
-.detalhes-expandidos-historico p {
-  margin: 6px 0;
-}
-
-/* Ionic iOS: ::slotted([slot=start]) { margin-top/bottom: 2px } — remove para alinhar com o miolo */
-.lista-historico ion-item.item-historico div[slot='start'].caixa-icone-historico {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-.caixa-icone-historico {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  align-self: center;
-  margin-top: 0;
-}
-
-.caixa-icone-historico ion-icon {
-  font-size: 1.4rem;
-  color: #ffffff !important;
-}
-
-.caixa-icone-abastecimento {
-  background-color: #ffc409;
-}
-
-.caixa-icone-manutencao {
-  background-color: #e65100;
-}
-
-.caixa-icone-consumo {
-  background-color: var(--ion-color-dark-shade);
-}
-
-.caixa-icone-viagem {
-  /* Ícone de viagens em azul */
-  background-color: #3880ff;
-}
-
-.caixa-icone-veiculo {
-  background-color: var(--ion-color-tertiary-shade);
-}
-
-.caixa-icone-despesa {
-  background-color: #eb445a;
-}
-
-.caixa-icone-receita {
-  /* Verde dinheiro para receitas */
-  background-color: #1f7a3a;
-}
-
-/*
- * ion-item (MD) pode aplicar align-self: flex-start em [slot=end] com .item-multi-line;
- * forçamos centro no eixo vertical do .item-inner.
- */
-.lista-historico ion-item.item-historico ion-buttons.botoes-acao[slot='end'] {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  align-self: center !important;
-  align-items: center !important;
-}
-
-.botoes-acao {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  margin-left: 0;
-  margin-top: 0;
-  min-width: auto;
-}
-
-.botoes-acao ion-button {
-  margin: 0 0 0 4px;
-  height: 44px;
-  width: 44px;
-  --padding-start: 0;
-  --padding-end: 0;
-  --padding-top: 0;
-  --padding-bottom: 0;
-}
-
-.botoes-acao ion-button:last-child {
-  margin-right: -8px;
-}
-
-.botoes-acao ion-button ion-icon {
-  font-size: 24px;
-}
-
-.botao-menu-historico ion-icon {
-  font-size: 0.9rem;
-}
+:host { --history-bg: #f3f5f9; --history-paper: #fff; --history-text: #17243b; --history-muted: #59677c; --history-line: #dce4ef; --history-accent: var(--ion-color-primary-shade); --history-soft: color-mix(in srgb, var(--ion-color-primary) 10%, var(--history-paper)); }
+:host-context(body.dark) { --history-bg: #10151e; --history-paper: #1b2330; --history-text: #eef3ff; --history-muted: #b1bdd0; --history-line: #354053; --history-accent: var(--ion-color-primary-tint); }
+.history-content { --background: var(--history-bg); }
+.history-layout { max-width: 720px; margin: auto; padding: calc(24px + var(--ion-safe-area-top, 0px)) 20px 28px; color: var(--history-text); }
+.history-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+.eyebrow { margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--history-muted); }
+h1 { margin: 0; font-size: 29px; font-weight: 700; letter-spacing: -.8px; color: var(--history-text); }
+.history-subtitle { font-size: 13px; color: var(--history-muted); line-height: 1.5; margin: 8px 0 0; }
+.item-filtros { --background: transparent; --padding-start: 0; --inner-padding-end: 0; --border-width: 0; }
+.linha-filtros { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; padding: 2px 0 12px; }
+.filtro-inline { min-width: 0; }
+.filtro-label { display: block; color: var(--history-muted); font-size: 12px; margin-bottom: 6px; }
+.filtro-select { width: 100%; min-height: 44px; padding: 0 10px; border: 1px solid var(--history-line); border-radius: 12px; background: var(--history-paper); color: var(--history-text); font-size: 13px; }
+.month-heading { font-size: 16px; font-weight: 600; text-transform: capitalize; color: var(--history-text); margin: 24px 0 12px; }
+.history-record { background: var(--history-paper); border: 1px solid var(--history-line); overflow: hidden; }
+.history-record + .history-record { border-top: 0; }
+.month-heading + .history-record, .history-record:first-child { border-top-left-radius: 18px; border-top-right-radius: 18px; }
+.history-record:has(+ .month-heading), .history-record:last-child { border-bottom-left-radius: 18px; border-bottom-right-radius: 18px; }
+.record-summary { width: 100%; display: flex; align-items: center; gap: 12px; padding: 18px 14px; min-height: 80px; border: 0; background: transparent; color: var(--history-text); font: inherit; text-align: left; cursor: pointer; }
+.record-summary:focus-visible { outline: 2px solid var(--history-accent); outline-offset: -3px; }
+.record-icon { display: grid; place-items: center; width: 38px; height: 42px; flex-shrink: 0; border-radius: 12px; background: var(--history-soft); }
+.record-icon ion-icon { color: var(--history-accent); font-size: 22px; }
+.record-copy { flex: 1; min-width: 0; }
+.record-copy strong { display: block; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.record-copy small { display: block; color: var(--history-muted); font-size: 12px; line-height: 1.5; margin-top: 5px; }
+.record-value { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; max-width: 35%; overflow-wrap: anywhere; }
+.record-chevron { flex-shrink: 0; color: var(--history-muted); font-size: 15px; }
+.expanded { background: color-mix(in srgb, var(--history-soft) 45%, var(--history-paper)); }
+.record-details { padding: 0 16px 16px; font-size: 13px; }
+.record-details p { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 14px; line-height: 1.6; margin: 0; padding: 7px 0; overflow-wrap: anywhere; }
+.record-details p:first-child { border-top: 1px solid var(--history-line); padding-top: 14px; }
+.record-details strong { color: var(--history-muted); font-weight: 500; }
+.record-actions { display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--history-line); margin-top: 10px; padding-top: 8px; }
+.record-actions ion-button { text-transform: none; letter-spacing: 0; }
+.record-actions ion-icon { color: inherit; }
+.empty-history { text-align: center; color: var(--history-muted); padding: 30px 0; }
+@media (max-width: 360px) { .history-layout { padding-inline: 14px; } .record-summary { padding: 16px 10px; gap: 8px; } .record-icon { width: 30px; } .record-value { font-size: 13px; } }

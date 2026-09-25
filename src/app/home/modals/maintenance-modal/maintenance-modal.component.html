@@ -1,151 +1,58 @@
-<ion-header mode="ios">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="close()">
-        <ion-icon slot="start" name="chevron-back"></ion-icon>
-        Voltar
-      </ion-button>
-    </ion-buttons>
-    <ion-title>{{ isEditing ? 'Editar Manutenção' : 'Nova Manutenção' }}</ion-title>
-  </ion-toolbar>
+<ion-header class="form-header" mode="ios">
+  <ion-toolbar><ion-buttons slot="start"><ion-button (click)="close()"><ion-icon slot="start" name="chevron-back" aria-hidden="true"></ion-icon>Voltar</ion-button></ion-buttons><span class="form-brand" slot="end">KM RODADOS</span></ion-toolbar>
 </ion-header>
-
-<ion-content>
-  <ion-header collapse="condense" mode="ios">
-    <ion-toolbar>
-      <ion-title size="large">{{ isEditing ? 'Editar Manutenção' : 'Nova Manutenção' }}</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <div class="ion-padding">
-    <ion-card *ngIf="hasValidationErrors" class="validation-card">
-    <ion-card-content>
-      <p><strong>Campos obrigatórios não preenchidos:</strong></p>
-      <ul>
-        <li *ngFor="let field of missingFields">{{ field }}</li>
-      </ul>
-    </ion-card-content>
-  </ion-card>
-
-  <!-- 1. Veículo -->
-  <ion-item [class.required-field]="vehicleError">
-    <ion-select [(ngModel)]="maintVehicle" (ionChange)="vehicleError = false" label="Veículo *" label-placement="floating">
-      <ion-select-option *ngFor="let v of vehicles" [value]="v.plate">{{ v.model }} ({{ v.plate | uppercase }})</ion-select-option>
-    </ion-select>
-  </ion-item>
-
-  <!-- 2. Resumo do Serviço -->
-  <ion-item [class.required-field]="summaryError">
-    <ion-textarea label="Resumo do Serviço *" label-placement="floating" [(ngModel)]="maintSummary" (ionInput)="summaryError = false" placeholder="Ex: Troca de óleo" [autoGrow]="true" rows="1"></ion-textarea>
-  </ion-item>
-
-  <!-- 3. Card Valores -->
-  <ion-card class="ion-no-margin ion-margin-top ion-margin-bottom" style="border-radius: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid var(--ion-color-step-150, #d7d8da);">
-    <ion-card-header>
-      <ion-card-title style="font-size: 1.1rem;">Valores</ion-card-title>
-    </ion-card-header>
-    <ion-card-content class="values-card-content">
-      <ion-grid>
-        <ion-row>
-          <ion-col size="6" class="col-pecas">
-            <ion-item lines="full" class="ion-no-padding-end item-valor">
-              <ion-input type="tel" inputmode="decimal" label="Peças (R$)" label-placement="floating" [(ngModel)]="maintPartsValueStr" (ionInput)="handleCurrencyInput($event, 'maintPartsValueStr')" placeholder="R$ 0,00"></ion-input>
-            </ion-item>
-          </ion-col>
-          <ion-col size="6" class="col-mao-obra">
-            <ion-item lines="full" class="item-valor">
-              <ion-input type="tel" inputmode="decimal" label="Mão de Obra (R$)" label-placement="floating" [(ngModel)]="maintServiceValueStr" (ionInput)="handleCurrencyInput($event, 'maintServiceValueStr')" placeholder="R$ 0,00"></ion-input>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col size="12" class="col-total">
-            <ion-item lines="none" [class.required-field]="totalValueError" class="item-total">
-              <ion-input type="tel" inputmode="decimal" label="Total (R$) *" label-placement="floating" [(ngModel)]="maintTotalValueStr" (ionInput)="aoDigitarValorTotal($event)"></ion-input>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </ion-card-content>
-  </ion-card>
-
-  <!-- Odômetro (abaixo de Valores) -->
-  <ion-item class="odometer-item">
-    <ion-input
-      type="tel"
-      inputmode="decimal"
-      label="Odômetro (km)"
-      label-placement="floating"
-      [(ngModel)]="maintOdometerStr"
-      (ionInput)="formatOdometer($event)"
-      class="odometer-input">
-    </ion-input>
-    <span
-      slot="end"
-      class="icone-ajuda-odometro"
-      tabindex="0"
-      (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
-  </ion-item>
-
-  <!-- Botão Mostrar mais/menos -->
-  <div class="ion-text-start ion-margin-vertical ion-padding-start">
-    <span 
-      (click)="mostrarMaisCampos = !mostrarMaisCampos" 
-      style="color: var(--ion-color-primary); cursor: pointer; text-decoration: underline;">
-      {{ mostrarMaisCampos ? '- Mostrar menos' : '+ Mostrar mais' }}
-    </span>
-  </div>
-
-  <!-- Campos Secundários -->
-  <div *ngIf="mostrarMaisCampos">
-    <!-- Data e Hora -->
-    <ion-grid>
-      <ion-row>
-        <ion-col size="7">
-          <ion-item class="datetime-item" [class.required-field]="dateError">
-            <ion-label position="fixed">Data *</ion-label>
-            <ion-datetime-button datetime="maint-datetime" slot="end"></ion-datetime-button>
-          </ion-item>
-        </ion-col>
-        <ion-col size="5">
-          <ion-item class="datetime-item">
-            <ion-label position="fixed">Hora</ion-label>
-            <ion-datetime-button datetime="maint-time" slot="end"></ion-datetime-button>
-          </ion-item>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-    <ion-modal [keepContentsMounted]="true">
-      <ng-template>
-        <ion-datetime
-          id="maint-datetime"
-          presentation="date"
-          locale="pt-BR"
-          [formatOptions]="opcoesFormatoData"
-          [(ngModel)]="maintDate"
-          (ionChange)="dateError = false">
-        </ion-datetime>
-      </ng-template>
-    </ion-modal>
-    <ion-modal [keepContentsMounted]="true">
-      <ng-template>
-        <ion-datetime
-          id="maint-time"
-          presentation="time"
-          locale="pt-BR"
-          [(ngModel)]="maintTime">
-        </ion-datetime>
-      </ng-template>
-    </ion-modal>
-
-    <!-- Peças / Detalhes -->
-    <ion-item>
-      <ion-textarea label="Peças / Detalhes" label-placement="floating" [(ngModel)]="maintParts" placeholder="Ex: Filtro de óleo, 4L óleo 5w30..." [autoGrow]="true" rows="2"></ion-textarea>
-    </ion-item>
-  </div>
-
-  <ion-button expand="block" class="ion-margin-top" (click)="save()">
-    {{ isEditing ? 'Atualizar' : 'Salvar' }}
-  </ion-button>
-  </div>
+<ion-content class="form-content">
+  <main class="vehicle-form">
+    <h1>{{ isEditing ? 'Editar manutenção' : 'Nova manutenção' }}</h1>
+    <p class="form-description">Organize os cuidados e os custos do veículo.</p>
+    <div class="validation-card" *ngIf="hasValidationErrors" role="alert"><strong>Confira os campos obrigatórios:</strong><ul><li *ngFor="let field of missingFields">{{ field }}</li></ul></div>
+    <div class="form-vehicle" [class.required-field]="vehicleError">
+      <span class="vehicle-symbol"><ion-icon name="car-outline" aria-hidden="true"></ion-icon></span>
+      <div class="vehicle-identity">
+        <ion-select *ngIf="vehicles.length > 1; else singleVehicle" [(ngModel)]="maintVehicle" (ionChange)="vehicleError = false" aria-label="Veículo" interface="action-sheet" cancelText="Cancelar"><ion-select-option *ngFor="let v of vehicles" [value]="v.plate">{{ v.model }} ({{ v.plate | uppercase }})</ion-select-option></ion-select>
+        <ng-template #singleVehicle><strong>{{ vehicles[0]?.model || 'Nenhum veículo cadastrado' }}</strong></ng-template>
+        <span class="vehicle-plate">{{ maintVehicle | uppercase }}</span>
+      </div>
+    </div>
+<div class="form-field" [class.required-field]="summaryError">
+  <span class="field-label">Serviço realizado *</span>
+  <ion-textarea rows="2" [autoGrow]="true" aria-label="Serviço realizado *" [(ngModel)]="maintSummary" (ionInput)="summaryError = false" placeholder="Ex.: troca de óleo e filtro" ></ion-textarea>
+</div>
+    <div class="form-grid">
+<div class="form-field">
+  <span class="field-label">Odômetro · km <button type="button" class="field-help" aria-label="Ajuda sobre o odômetro" (click)="ajuda_odometro.mostrarAjudaOdometro($event)"><ion-icon name="help-circle-outline" aria-hidden="true"></ion-icon></button></span>
+  <ion-input type="tel" inputmode="decimal" aria-label="Odômetro · km" [(ngModel)]="maintOdometerStr" (ionInput)="formatOdometer($event)" placeholder="0" ></ion-input>
+</div>
+<div class="form-field" [class.required-field]="dateError"><span class="field-label">Data *</span><div class="date-control"><ion-datetime-button datetime="maint-datetime" aria-label="Data do registro"></ion-datetime-button></div></div>
+<ion-modal [keepContentsMounted]="true"><ng-template><ion-datetime id="maint-datetime" presentation="date" locale="pt-BR" [formatOptions]="opcoesFormatoData" [(ngModel)]="maintDate" (ionChange)="dateError = false"></ion-datetime></ng-template></ion-modal>
+    </div>
+    <h2>Quanto custou?</h2>
+    <div class="form-grid">
+<div class="form-field">
+  <span class="field-label">Peças · R$</span>
+  <ion-input type="tel" inputmode="decimal" aria-label="Peças · R$" [(ngModel)]="maintPartsValueStr" (ionInput)="handleCurrencyInput($event, 'maintPartsValueStr')" placeholder="R$ 0,00" ></ion-input>
+</div>
+<div class="form-field">
+  <span class="field-label">Mão de obra · R$</span>
+  <ion-input type="tel" inputmode="decimal" aria-label="Mão de obra · R$" [(ngModel)]="maintServiceValueStr" (ionInput)="handleCurrencyInput($event, 'maintServiceValueStr')" placeholder="R$ 0,00" ></ion-input>
+</div>
+    </div>
+    <div class="total-highlight">
+<div class="form-field" [class.required-field]="totalValueError">
+  <span class="field-label">Valor total *</span>
+  <ion-input type="tel" inputmode="decimal" aria-label="Valor total *" [(ngModel)]="maintTotalValueStr" (ionInput)="aoDigitarValorTotal($event)" placeholder="R$ 0,00" ></ion-input>
+</div>
+    </div>
+    <button class="more-fields" type="button" [attr.aria-expanded]="mostrarMaisCampos" (click)="mostrarMaisCampos = !mostrarMaisCampos"><ion-icon [name]="mostrarMaisCampos ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></ion-icon>Peças e detalhes adicionais</button>
+    <section *ngIf="mostrarMaisCampos" class="additional-fields" aria-label="Detalhes da manutenção">
+<div class="form-field"><span class="field-label">Hora</span><div class="date-control"><ion-datetime-button datetime="maint-time" aria-label="Hora do registro"></ion-datetime-button></div></div>
+<ion-modal [keepContentsMounted]="true"><ng-template><ion-datetime id="maint-time" presentation="time" locale="pt-BR" [(ngModel)]="maintTime"></ion-datetime></ng-template></ion-modal>
+<div class="form-field">
+  <span class="field-label">Peças e detalhes</span>
+  <ion-textarea rows="2" [autoGrow]="true" aria-label="Peças e detalhes" [(ngModel)]="maintParts" placeholder="Ex.: filtro de óleo e 4 L de óleo 5W30" ></ion-textarea>
+</div>
+    </section>
+    <ion-button expand="block" class="save-button" (click)="save()"><ion-icon name="checkmark-outline" slot="start" aria-hidden="true"></ion-icon>{{ isEditing ? 'Atualizar manutenção' : 'Salvar manutenção' }}</ion-button>
+    <p class="form-footnote">* Campos obrigatórios</p>
+  </main>
 </ion-content>

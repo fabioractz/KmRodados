@@ -17,6 +17,7 @@ import { ConsumptionModalComponent } from '../home/modals/consumption-modal/cons
 export class CalculatorPage implements OnInit {
 
   // View State
+  private consumptionModalOpen = false;
   currentView: 'menu' | 'trip' | 'consumption' | 'simple' = 'menu';
 
   // Trip Calculator
@@ -145,7 +146,9 @@ export class CalculatorPage implements OnInit {
       }
 
       if (viewParam) {
-        this.setView(viewParam);
+        const requestedView = viewParam;
+        viewParam = undefined;
+        this.setView(requestedView);
       }
       if (editTripIdParam) {
         let alvo: { vehicle: Vehicle, trip: Trip } | null = null;
@@ -264,6 +267,18 @@ export class CalculatorPage implements OnInit {
         ]
       });
       await alert.present();
+      return;
+    }
+
+    if (view === 'consumption') {
+      if (this.consumptionModalOpen) return;
+      this.consumptionModalOpen = true;
+      try {
+        const modal = await this.modalCtrl.create({ component: ConsumptionModalComponent,
+          componentProps: { vehicles: this.vehicles, preSelectedPlate: this.calcSelectedVehicle?.plate || this.selectedVehicle?.plate } });
+        await modal.present();
+        await modal.onDidDismiss();
+      } finally { this.consumptionModalOpen = false; }
       return;
     }
 

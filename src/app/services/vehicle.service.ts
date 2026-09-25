@@ -111,6 +111,7 @@ export interface IncomeEntry {
 }
 
 export interface Vehicle {
+  avisosConsumoDispensados?: string[];
   type: string;
   model: string;
   consumption?: number;
@@ -667,14 +668,7 @@ export class VehicleService {
       return { ciclosValidos, mediaConsumoKmPorLitro: 0, ciclosRejeitados };
     }
 
-    const ordenados = [...brutos].sort((a, b) => {
-      const ta = new Date(a.date).getTime();
-      const tb = new Date(b.date).getTime();
-      if (ta !== tb) {
-        return ta - tb;
-      }
-      return (a.createdAt ?? 0) - (b.createdAt ?? 0);
-    });
+    const ordenados = this.ordenarAbastecimentosParaCiclos(vehicle);
 
     const indicesTanqueCheio: number[] = [];
     ordenados.forEach((s, idx) => {
@@ -704,6 +698,51 @@ export class VehicleService {
         : 0;
 
     return { ciclosValidos, mediaConsumoKmPorLitro, ciclosRejeitados };
+  }
+
+  chaveAvisoConsumo(vehicle: Vehicle, ciclo: { indiceInicio: number; indiceFim: number }): string {
+    const supplies = this.ordenarAbastecimentosParaCiclos(vehicle);
+    const identity = (s: Supply) => s.id || `${new Date(s.date).getTime()}:${s.createdAt ?? ''}`;
+    return JSON.stringify([identity(supplies[ciclo.indiceInicio]), identity(supplies[ciclo.indiceFim])]);
+  }
+
+  avisoConsumoDispensado(vehicle: Vehicle, ciclo: { indiceInicio: number; indiceFim: number }): boolean {
+    return (vehicle.avisosConsumoDispensados || []).includes(this.chaveAvisoConsumo(vehicle, ciclo));
+  }
+
+  dispensarAvisoConsumo(plate: string, chave: string) {
+    const vehicle = this.vehicles.find(v => v.plate === plate);
+    if (!vehicle || vehicle.avisosConsumoDispensados?.includes(chave)) return;
+    vehicle.avisosConsumoDispensados = [...(vehicle.avisosConsumoDispensados || []), chave];
+    this.saveVehicles();
+    this.vehiclesSubject.next([...this.vehicles]);
+  }
+
+  /** Review hints, not invalidation: driving conditions can legitimately vary. */
+  identificarCiclosAtipicos(vehicle: Vehicle): (CicloConsumoTanqueCheio & { motivo: string; referencia: number })[] {
+    const ciclos = this.analisarCiclosConsumoPorTanqueCheio(vehicle).ciclosValidos;
+    if (ciclos.length < 5) return [];
+    return ciclos.reduce<(CicloConsumoTanqueCheio & { motivo: string; referencia: number })[]>((avisos, ciclo) => {
+      const outros = ciclos.filter(c => c !== ciclo).map(c => c.consumoKmPorLitro).sort((a, b) => a - b);
+      const meio = Math.floor(outros.length / 2);
+      const mediana = outros.length % 2 ? outros[meio] : (outros[meio - 1] + outros[meio]) / 2;
+      if (ciclo.consumoKmPorLitro > mediana * 2.5 || ciclo.consumoKmPorLitro < mediana / 2.5) {
+        avisos.push({ ...ciclo, referencia: mediana, motivo: `Consumo de ${ciclo.consumoKmPorLitro.toFixed(2).replace('.', ',')} km/L muito diferente do padrão dos demais ciclos (${mediana.toFixed(2).replace('.', ',')} km/L). Confira odômetro, litros, abastecimentos faltantes e a marcação de tanque cheio. É um alerta: o ciclo continua no gráfico e na média.` });
+      }
+      return avisos;
+    }, []);
+  }
+
+  /** Mesma ordem usada pelos índices da análise e pelo histórico de correções. */
+  ordenarAbastecimentosParaCiclos(vehicle: Vehicle): Supply[] {
+    return [...(vehicle.supplies || [])].sort((a, b) => {
+      const ta = new Date(a.date).getTime();
+      const tb = new Date(b.date).getTime();
+      if (ta !== tb) {
+        return ta - tb;
+      }
+      return (a.createdAt ?? 0) - (b.createdAt ?? 0);
+    });
   }
 
   private abastecimentoMarcadoTanqueCheio(s: Supply): boolean {
@@ -756,12 +795,24 @@ export class VehicleService {
       };
     }
 
+    const km = (value: number) => new Intl.NumberFormat('pt-BR').format(value);
+    const data = (supply: Supply) => new Date(supply.date).toLocaleDateString('pt-BR');
     const odoAposInicio = this.obterOdometroAposAbastecimento(ordenados[i]);
     const odoAntesFim = this.obterOdometroAntesAbastecimento(ordenados[j]);
     if (odoAposInicio <= 0 || odoAntesFim <= 0) {
       return {
         ok: false,
         motivo: 'Odômetro ausente ou inválido no início ou no fim do ciclo (após o 1.º cheio / antes do 2.º cheio).'
+      };
+    }
+
+    // A reading that went backwards cannot become a valid baseline merely
+    // because the following fill has a larger odometer. Flag both adjacent
+    // cycles until the user corrects the shared boundary record.
+    if (i > 0 && odoAposInicio < this.obterOdometroAposAbastecimento(ordenados[i - 1])) {
+      return {
+        ok: false,
+        motivo: `Em ${data(ordenados[i])}, o odômetro foi registrado como ${km(odoAposInicio)} km, mas no abastecimento anterior, de ${data(ordenados[i - 1])}, já marcava ${km(this.obterOdometroAposAbastecimento(ordenados[i - 1]))} km. Confira se houve erro de digitação. Para ajustar este registro, toque em Início - ${data(ordenados[i])}.`
       };
     }
 
@@ -779,7 +830,7 @@ export class VehicleService {
       if (minK < ultimaLeitura) {
         return {
           ok: false,
-          motivo: 'Odômetro retrocedeu em relação ao trecho anterior (dados inconsistentes).'
+          motivo: `Em ${data(ordenados[k])}, o odômetro foi registrado como ${km(minK)} km, abaixo dos ${km(ultimaLeitura)} km registrados antes. Confira os valores e toque no abastecimento dessa data para ajustar.`
         };
       }
       ultimaLeitura = Math.max(ultimaLeitura, maxK);
@@ -788,7 +839,7 @@ export class VehicleService {
     if (odoAntesFim < ultimaLeitura) {
       return {
         ok: false,
-        motivo: 'Odômetro no fim do ciclo é menor que leituras anteriores (dados inconsistentes).'
+        motivo: `Em ${data(ordenados[j])}, o odômetro foi registrado como ${km(odoAntesFim)} km, mas um abastecimento anterior deste ciclo já marcava ${km(ultimaLeitura)} km. Confira se houve erro de digitação nos registros. Para ajustar o último, toque em Fim - ${data(ordenados[j])}.`
       };
     }
 

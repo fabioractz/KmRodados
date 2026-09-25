@@ -1,20 +1,16 @@
-<ion-header [translucent]="true" mode="ios">
+<ion-header class="form-header" mode="ios">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/more" text="Voltar"></ion-back-button>
     </ion-buttons>
-    <ion-title>Receitas</ion-title>
+    <span slot="end" class="form-brand">KM RODADOS</span>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense" mode="ios">
-    <ion-toolbar>
-      <ion-title size="large">Receitas</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  
-  <div class="ion-padding">
+<ion-content class="form-content">
+  <div class="vehicle-form finance-form">
+    <h1>Receitas</h1>
+    <p class="form-description">Registre os valores recebidos com seu veículo.</p>
     <ion-card *ngIf="hasValidationErrors" class="validation-card">
     <ion-card-content>
       <p><strong>Campos obrigatórios não preenchidos:</strong></p>
@@ -26,7 +22,7 @@
 
   <!-- 1. Veículo -->
   <ion-item [class.required-field]="vehicleError">
-    <ion-select [(ngModel)]="selectedVehiclePlate" (ionChange)="onVehicleChange()" label="Escolha o Veículo *" label-placement="floating" placeholder="Selecione">
+    <ion-select [(ngModel)]="selectedVehiclePlate" (ionChange)="onVehicleChange()" label="Escolha o Veículo *" label-placement="stacked" placeholder="Selecione">
       <ion-select-option *ngFor="let v of vehicles" [value]="v.plate">
         {{ v.model }} ({{ v.plate | uppercase }})
       </ion-select-option>
@@ -35,7 +31,7 @@
 
   <!-- 2. Tipo de Receita -->
   <ion-item [class.required-field]="incomeTypeError">
-    <ion-select [(ngModel)]="incomeType" (ionChange)="onIncomeTypeChange()" label="Tipo de Receita *" label-placement="floating" interface="popover" placeholder="Selecione">
+    <ion-select [(ngModel)]="incomeType" (ionChange)="onIncomeTypeChange()" label="Tipo de Receita *" label-placement="stacked" interface="popover" placeholder="Selecione">
       <ion-select-option *ngFor="let tipo of incomeTypes" [value]="tipo">
         {{ tipo }}
       </ion-select-option>
@@ -48,7 +44,7 @@
       type="tel"
       inputmode="decimal"
       label="Valor da Receita *"
-      label-placement="floating"
+      label-placement="stacked"
       placeholder="R$ 0,00"
       [(ngModel)]="amountStr"
       (ionInput)="formatAmount($event)">
@@ -56,16 +52,12 @@
   </ion-item>
 
   <!-- Botão Mostrar mais/menos -->
-  <div class="ion-text-start ion-margin-vertical ion-padding-start">
-    <span 
-      (click)="mostrarMaisCampos = !mostrarMaisCampos" 
-      style="color: var(--ion-color-primary); cursor: pointer; text-decoration: underline;">
-      {{ mostrarMaisCampos ? '- Mostrar menos' : '+ Mostrar mais' }}
-    </span>
-  </div>
+  <button type="button" class="more-fields" [attr.aria-expanded]="mostrarMaisCampos" aria-controls="finance-extra" (click)="mostrarMaisCampos = !mostrarMaisCampos">
+    {{ mostrarMaisCampos ? '−' : '+' }} Data, lembretes e outros detalhes
+  </button>
 
   <!-- Campos Secundários -->
-  <div *ngIf="mostrarMaisCampos">
+  <div *ngIf="mostrarMaisCampos" id="finance-extra">
     <!-- Data e Hora -->
     <ion-grid>
       <ion-row>
@@ -107,7 +99,7 @@
 
     <!-- Recorrência e Lembretes -->
     <ion-item>
-      <ion-select [(ngModel)]="recurrence" (ionChange)="onRecurrenceChange()" label="Recorrente" label-placement="floating" interface="popover">
+      <ion-select [(ngModel)]="recurrence" (ionChange)="onRecurrenceChange()" label="Recorrente" label-placement="stacked" interface="popover">
         <ion-select-option *ngFor="let r of recurrenceOptions" [value]="r">
           {{ r }}
         </ion-select-option>
@@ -121,7 +113,7 @@
     </ion-item>
 
     <ion-item *ngIf="recurrence !== 'Única' && reminderEnabled">
-      <ion-select [(ngModel)]="reminderTime" label="Lembrar" label-placement="floating" interface="popover">
+      <ion-select [(ngModel)]="reminderTime" label="Lembrar" label-placement="stacked" interface="popover">
         <ion-select-option *ngFor="let opt of reminderOptions" [value]="opt">
           {{ opt }}
         </ion-select-option>
@@ -132,17 +124,16 @@
     <ion-item>
       <ion-textarea
         label="Observações"
-        label-placement="floating"
+        label-placement="stacked"
         auto-grow="true"
         [(ngModel)]="notes">
       </ion-textarea>
     </ion-item>
   </div>
 
-  <ion-button expand="block" class="ion-margin-top" (click)="salvar()">
-    Salvar
+  <ion-button expand="block" class="save-button" (click)="salvar()">
+    Salvar receita
   </ion-button>
-  </div>
 
   <ion-item *ngIf="showHistory">
     <ion-label>
@@ -186,4 +177,5 @@
   <ion-item *ngIf="showHistory && !history.length">
     <ion-label>Nenhuma receita registrada ainda.</ion-label>
   </ion-item>
+  </div>
 </ion-content>

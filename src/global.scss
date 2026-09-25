@@ -246,9 +246,12 @@ body.dark ion-datetime::part(wheel-item active) {
   --ion-safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+// Android: respeitar os insets reais do sistema (navegação por gestos
+// reporta safe-area-inset-bottom ~24dp; barra de 3 botões ~48dp).
+// O StatusBar.setOverlaysWebView(true) já está ativo em app.component.ts.
 .md {
-  --ion-safe-area-top: 0px;
-  --ion-safe-area-bottom: 0px;
+  --ion-safe-area-top: env(safe-area-inset-top, 0px);
+  --ion-safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 ion-header ion-toolbar {

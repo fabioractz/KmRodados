@@ -1,122 +1,69 @@
-<ion-header [translucent]="true" mode="ios">
+<ion-header mode="ios" class="settings-header">
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/more" text="Voltar"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Mais</ion-title>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/more" text="Mais"></ion-back-button></ion-buttons>
   </ion-toolbar>
 </ion-header>
+<ion-content class="settings-content">
+  <main class="settings-layout">
+    <header><p class="eyebrow">KM RODADOS</p><h1>Configurações</h1><p class="description">Seu app, do seu jeito.</p></header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense" mode="ios">
-    <ion-toolbar>
-      <ion-title size="large">Configurações</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <ion-list>
-    <ion-radio-group [value]="themeMode" (ionChange)="changeTheme($event)">
-      <ion-list-header>
-        <ion-label>Tema</ion-label>
-      </ion-list-header>
-
-      <ion-item button (click)="selecionarTema('system', $event)" detail="false">
-        <ion-icon slot="start" name="settings-outline"></ion-icon>
-        <ion-label>Sistema</ion-label>
-        <ion-radio slot="end" value="system"></ion-radio>
-      </ion-item>
-
-      <ion-item button (click)="selecionarTema('light', $event)" detail="false">
-        <ion-icon slot="start" name="sunny-outline"></ion-icon>
-        <ion-label>Claro</ion-label>
-        <ion-radio slot="end" value="light"></ion-radio>
-      </ion-item>
-
-      <ion-item button (click)="selecionarTema('dark', $event)" detail="false">
-        <ion-icon slot="start" name="moon-outline"></ion-icon>
-        <ion-label>Escuro</ion-label>
-        <ion-radio slot="end" value="dark"></ion-radio>
-      </ion-item>
-    </ion-radio-group>
-  </ion-list>
-
-  <ion-list>
-    <ion-list-header>
-      <ion-label>Personalização</ion-label>
-    </ion-list-header>
-
-    <ion-item button (click)="toggleColorPicker()" detail="false">
-      <ion-icon slot="start" name="color-palette-outline"></ion-icon>
-      <ion-label>Cor do Tema</ion-label>
-      <ion-note slot="end" [style.color]="selectedColor" style="font-weight: bold; margin-right: 10px;">
-        {{ getSelectedColorName() }}
-      </ion-note>
-      <ion-icon slot="end" [name]="showColorPicker ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
-    </ion-item>
-    
-    <div class="color-scroll" *ngIf="showColorPicker">
-      <div class="color-item" *ngFor="let color of colors" 
-           (click)="changeColor(color.value)"
-           [class.selected]="selectedColor === color.value">
-        <div class="color-circle" [style.background]="color.value">
-          <ion-icon name="checkmark-outline" *ngIf="selectedColor === color.value" [style.color]="color.contrast"></ion-icon>
+    <section aria-labelledby="appearance-heading">
+      <h2 id="appearance-heading"><ion-icon name="color-palette-outline" aria-hidden="true"></ion-icon>Aparência</h2>
+      <div class="settings-group">
+        <div class="theme-options" role="group" aria-label="Tema do app">
+          <button type="button" [attr.aria-pressed]="themeMode === 'system'" (click)="selecionarTema('system', $event)">Sistema</button>
+          <button type="button" [attr.aria-pressed]="themeMode === 'light'" (click)="selecionarTema('light', $event)">Claro</button>
+          <button type="button" [attr.aria-pressed]="themeMode === 'dark'" (click)="selecionarTema('dark', $event)">Escuro</button>
+        </div>
+        <button type="button" class="settings-row color-trigger" (click)="toggleColorPicker()" [attr.aria-expanded]="showColorPicker" aria-controls="theme-colors">
+          <span>Cor do tema</span><span class="color-value"><span class="color-swatch" [style.background]="selectedColor" aria-hidden="true"></span>{{ getSelectedColorName() }}<ion-icon [name]="showColorPicker ? 'chevron-up-outline' : 'chevron-down-outline'" aria-hidden="true"></ion-icon></span>
+        </button>
+        <div class="color-options" id="theme-colors" *ngIf="showColorPicker">
+          <button type="button" class="color-choice" *ngFor="let color of colors" (click)="changeColor(color.value)" [attr.aria-label]="color.name" [attr.aria-pressed]="selectedColor === color.value">
+            <span class="color-circle" [style.background]="color.value"><ion-icon name="checkmark-outline" *ngIf="selectedColor === color.value" [style.color]="color.contrast" aria-hidden="true"></ion-icon></span>
+          </button>
         </div>
       </div>
-    </div>
-  </ion-list>
+    </section>
 
-  <ion-list>
-    <ion-list-header>
-      <ion-label>Layout da Tela Inicial</ion-label>
-    </ion-list-header>
-    <ion-item lines="none">
-      <ion-text color="medium">Arraste para organizar a ordem dos cards na Home</ion-text>
-    </ion-item>
-    <ion-reorder-group (ionItemReorder)="onReorder($event)" disabled="false">
-      <ion-item class="layout-item" *ngFor="let key of homeCardsOrder">
-        <ion-toggle slot="start"
-                    [checked]="homeCardsEnabled[key]"
-                    (ionChange)="toggleCardEnabled(key, $event)">
-        </ion-toggle>
-        <ion-label>{{ homeCardsLabels[key] }}</ion-label>
-        <ion-reorder slot="end"></ion-reorder>
-      </ion-item>
-    </ion-reorder-group>
-  </ion-list>
+    <section aria-labelledby="home-heading">
+      <h2 id="home-heading"><ion-icon name="settings-outline" aria-hidden="true"></ion-icon>Tela inicial</h2>
+      <div class="settings-group">
+        <ion-reorder-group (ionItemReorder)="onReorder($event)" [disabled]="false">
+          <ion-item class="layout-item" lines="none" *ngFor="let key of homeCardsOrder; let i = index">
+            <ion-label>{{ homeCardsLabels[key] }}</ion-label>
+            <div class="order-buttons" slot="end">
+              <button type="button" [disabled]="i === 0" [attr.aria-label]="'Mover ' + homeCardsLabels[key] + ' para cima'" (click)="moveCard(i, -1)">↑</button>
+              <button type="button" [disabled]="i === homeCardsOrder.length - 1" [attr.aria-label]="'Mover ' + homeCardsLabels[key] + ' para baixo'" (click)="moveCard(i, 1)">↓</button>
+            </div>
+            <ion-toggle slot="end" [attr.aria-label]="'Mostrar ' + homeCardsLabels[key]" [checked]="homeCardsEnabled[key]" (ionChange)="toggleCardEnabled(key, $event)"></ion-toggle>
+            <ion-reorder slot="end" [attr.aria-label]="'Reordenar ' + homeCardsLabels[key]"></ion-reorder>
+          </ion-item>
+        </ion-reorder-group>
+        <p class="section-note">Escolha o que aparece. Arraste os itens ou use as setas para ajustar a ordem.</p>
+      </div>
+    </section>
 
-  <ion-list>
-    <ion-list-header>
-      <ion-label>Sobre</ion-label>
-    </ion-list-header>
+    <section aria-labelledby="data-heading">
+      <h2 id="data-heading"><ion-icon name="cloud-download-outline" aria-hidden="true"></ion-icon>Seus dados</h2>
+      <div class="settings-group">
+        <button type="button" class="settings-row" (click)="downloadBackup()"><span>Exportar backup</span><ion-icon name="cloud-download-outline" aria-hidden="true"></ion-icon></button>
+        <button type="button" class="settings-row" (click)="triggerImport()"><span>Importar backup</span><ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon></button>
+        <input type="file" #fileInput (change)="onFileSelected($event)" hidden accept=".json">
+      </div>
+    </section>
 
-    <ion-item button>
-      <ion-icon slot="start" name="information-circle-outline"></ion-icon>
-      <ion-label>Versão do App</ion-label>
-      <ion-note slot="end">{{ versao_app || '0.0.0' }}</ion-note>
-    </ion-item>
+    <section aria-labelledby="about-heading">
+      <h2 id="about-heading"><ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>Sobre o app</h2>
+      <div class="settings-group">
+        <div class="settings-row"><span>Versão do app</span><span class="version">{{ versao_app || '0.0.0' }}</span></div>
+        <ion-item class="terms-row" button lines="none" detail="true"><ion-label>Termos de uso</ion-label></ion-item>
+      </div>
+    </section>
 
-    <ion-item button>
-      <ion-icon slot="start" name="document-text-outline"></ion-icon>
-      <ion-label>Termos de Uso</ion-label>
-    </ion-item>
-  </ion-list>
-
-  <div class="ion-padding">
-    <ion-button expand="block" color="primary" class="ion-margin-bottom btn-contrast-primary" (click)="downloadBackup()">
-      <ion-icon slot="start" name="cloud-download-outline"></ion-icon>
-      Fazer Backup (Download)
-    </ion-button>
-
-    <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;" accept=".json">
-
-    <ion-button expand="block" color="secondary" fill="solid" class="ion-margin-bottom btn-contrast-secondary" (click)="triggerImport()">
-      <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
-      Importar Backup
-    </ion-button>
-
-    <ion-button expand="block" color="danger" fill="solid" class="btn-contrast-danger" (click)="confirmClearData()">
-      <ion-icon slot="start" name="trash-outline"></ion-icon>
-      Apagar Todos os Dados
-    </ion-button>
-  </div>
+    <section aria-labelledby="manage-heading">
+      <h2 id="manage-heading">Gerenciar dados</h2>
+      <div class="settings-group"><button type="button" class="settings-row danger-row" (click)="confirmClearData()"><span>Apagar todos os dados</span><ion-icon name="trash-outline" aria-hidden="true"></ion-icon></button></div>
+    </section>
+  </main>
 </ion-content>

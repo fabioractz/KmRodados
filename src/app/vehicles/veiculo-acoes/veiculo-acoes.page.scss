@@ -1,89 +1,57 @@
-.cabecalho-veiculo {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
+:host {
+  --vehicle-bg: #f3f5f9;
+  --vehicle-paper: #fff;
+  --vehicle-text: #17243b;
+  --vehicle-muted: #59677c;
+  --vehicle-border: #dce4ef;
+  --vehicle-accent: var(--ion-color-primary-shade);
+  --vehicle-soft: color-mix(in srgb, var(--ion-color-primary) 12%, var(--vehicle-paper));
 }
 
-.dados-veiculo h2 {
-  margin: 0 0 4px;
+:host-context(body.dark) {
+  --vehicle-bg: #10151e;
+  --vehicle-paper: #1b2330;
+  --vehicle-text: #eef3ff;
+  --vehicle-muted: #b1bdd0;
+  --vehicle-border: #354053;
+  --vehicle-accent: var(--ion-color-primary-tint);
+  --vehicle-soft: color-mix(in srgb, var(--ion-color-primary) 22%, var(--vehicle-paper));
 }
 
-.dados-veiculo p {
-  margin: 0;
-}
-
-.botao-editar-topo {
-  --padding-start: 6px;
-  --padding-end: 6px;
-  height: 28px;
-  min-height: 28px;
-  margin-top: 2px;
-}
-
-.botao-editar-topo ion-icon {
-  font-size: 18px;
-}
-
-.quick-action-row {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 12px 0;
-}
-
-.square-icon-btn {
-  width: 56px;
-  height: 56px;
-  background-color: var(--ion-color-primary);
-  color: var(--ion-color-primary-contrast, #ffffff);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb), 0.3);
-  transition: transform 0.1s ease;
-}
-
-.square-icon-btn ion-icon {
-  font-size: 28px;
-  color: inherit;
-}
-
-.square-icon-btn:active {
-  transform: scale(0.95);
-}
-
-.square-icon-btn-abastecimento {
-  background-color: #ffc409 !important;
-  color: #fff !important;
-  box-shadow: 0 4px 10px rgba(255, 196, 9, 0.3) !important;
-}
-
-.square-icon-btn-abastecimento ion-icon {
-  color: #fff !important;
-}
-
-.square-icon-btn-media {
-  background-color: var(--ion-color-dark) !important;
-  color: var(--ion-color-dark-contrast) !important;
-  box-shadow: 0 4px 10px rgba(var(--ion-color-dark-rgb), 0.3) !important;
-}
-
-.square-icon-btn-manutencao {
-  background-color: #e65100 !important;
-  color: #fff !important;
-  box-shadow: 0 4px 10px rgba(230, 81, 0, 0.3) !important;
-}
-
-.square-icon-btn-manutencao ion-icon {
-  color: #fff !important;
-}
-
-.action-label {
-  margin-left: 16px;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--ion-text-color);
-  letter-spacing: 0.01em;
+ion-toolbar { --background: var(--vehicle-paper); --color: var(--vehicle-text); }
+.vehicle-content { --background: var(--vehicle-bg); }
+.vehicle-layout { max-width: 640px; margin: auto; padding: 24px 20px 28px; color: var(--vehicle-text); }
+.vehicle-hero { padding: 24px; border-radius: 22px; background: var(--ion-color-primary-shade); color: var(--ion-color-primary-contrast); }
+.vehicle-hero h1,
+.vehicle-hero ion-icon { color: var(--ion-color-primary-contrast); }
+.vehicle-identity { display: flex; align-items: center; gap: 14px; }
+.vehicle-symbol { display: grid; place-items: center; flex-shrink: 0; width: 48px; height: 48px; border-radius: 14px; background: color-mix(in srgb, var(--ion-color-primary-contrast) 16%, transparent); }
+.vehicle-symbol ion-icon { font-size: 27px; }
+.vehicle-name { min-width: 0; }
+h1 { font-size: 26px; font-weight: 700; letter-spacing: -.7px; margin: 0 0 7px; overflow-wrap: anywhere; }
+.vehicle-name p { font-size: 13px; line-height: 1.5; margin: 0; opacity: .9; overflow-wrap: anywhere; }
+.default-badge { display: inline-flex; align-items: center; gap: 5px; margin-top: 16px; padding: 5px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: color-mix(in srgb, var(--ion-color-primary-contrast) 14%, transparent); }
+.default-badge ion-icon { font-size: 13px; }
+.vehicle-odometer { margin-top: 20px; padding-top: 18px; border-top: 1px solid color-mix(in srgb, var(--ion-color-primary-contrast) 25%, transparent); }
+.vehicle-odometer > span { font-size: 13px; opacity: .9; }
+.vehicle-odometer strong { display: block; margin-top: 6px; font-size: 34px; font-weight: 700; letter-spacing: -.8px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.vehicle-odometer small { font-size: 15px; font-weight: 400; letter-spacing: 0; }
+h2 { font-size: 17px; font-weight: 600; margin: 28px 0 14px; }
+.vehicle-actions { display: grid; gap: 10px; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--vehicle-accent); outline-offset: 3px; }
+.vehicle-action { display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px; border: 1px solid var(--vehicle-border); border-radius: 17px; background: var(--vehicle-paper); color: var(--vehicle-text); text-align: left; }
+.vehicle-action:active { background: var(--vehicle-soft); }
+.action-icon { display: grid; place-items: center; flex-shrink: 0; width: 46px; height: 46px; border-radius: 14px; background: var(--vehicle-soft); color: var(--vehicle-accent); }
+.action-icon ion-icon { font-size: 24px; }
+.action-copy { display: grid; gap: 5px; min-width: 0; }
+.action-copy strong { font-size: 15px; font-weight: 600; }
+.action-copy > span { font-size: 12px; line-height: 1.4; color: var(--vehicle-muted); }
+.action-arrow { margin-left: auto; flex-shrink: 0; font-size: 18px; color: var(--vehicle-muted); }
+.edit-vehicle { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; min-height: 48px; padding: 14px; margin-top: 16px; border: 0; border-radius: 12px; background: transparent; color: var(--vehicle-accent); font-size: 14px; }
+.edit-vehicle ion-icon { font-size: 20px; }
+@media (max-width: 360px) {
+  .vehicle-layout { padding-inline: 16px; }
+  .vehicle-hero { padding: 20px; }
+  .vehicle-action { padding: 14px 12px; gap: 10px; }
 }

@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { buildConsumptionChart, consumptionChartPoints } from './consumption-chart';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import {
   VehicleService,
   Vehicle,
@@ -27,6 +28,7 @@ Chart.register(...registerables);
 })
 export class HomePage implements OnInit, OnDestroy {
 
+  readonly historyLabels: Record<string, string> = { supply: 'Abastecimento', consumption: 'Consumo', maintenance: 'Manutenção', trip: 'Viagem', 'vehicle-add': 'Veículo adicionado', expense: 'Despesa', income: 'Receita' };
   vehicles: Vehicle[] = [];
   allHistory: any[] = [];
   showAllHistory: boolean = false;
@@ -35,7 +37,7 @@ export class HomePage implements OnInit, OnDestroy {
   showHistoryCard: boolean = true;
   showConsumptionChartCard: boolean = true;
   showMaintenanceChartCard: boolean = true;
-  homeCardOrder: string[] = ['summary', 'quickActions', 'consumption', 'maintenance', 'history'];
+  homeCardOrder: string[] = ['quickActions', 'summary', 'history', 'consumption', 'maintenance'];
   homeCardsEnabled: Record<string, boolean> = {
     summary: true,
     quickActions: true,
@@ -57,7 +59,6 @@ export class HomePage implements OnInit, OnDestroy {
     mediaConsumoKmPorLitro: 0,
     ciclosRejeitados: []
   };
-  detalhesCiclosConsumoExpandidos: boolean = false;
   tripCount: number = 0;
   lastUpdateDate: string = '-';
   
@@ -71,14 +72,33 @@ export class HomePage implements OnInit, OnDestroy {
 
   observador_tema?: MutationObserver;
 
+  trechosPendentes = 0;
+  ciclosAtipicos = 0;
   consumptionChartData: ChartConfiguration['data'] = { datasets: [], labels: [] };
+  pontoConsumo: { index: number; date: string; value: number; cycleKey: string | null; left: number; top: number } | null = null;
   public consumptionChartOptions: ChartConfiguration['options'] = {
+    onClick: (event, elements, chart) => this.ngZone.run(() => {
+      const vehicle = this.vehicleService.getVehiclesSnapshot().find(v => v.plate === this.summaryVehiclePlate);
+      const index = elements[0]?.index;
+      const point = vehicle && index != null ? consumptionChartPoints(vehicle, this.vehicleService)[index] : null;
+      this.pontoConsumo = point ? { index, date: point.date.toLocaleString('pt-BR'), value: point.value,
+        cycleKey: point.cycleKey, left: Math.max(28, Math.min(72, (event.x ?? 0) / chart.width * 100)),
+        top: Math.max(0, (event.y ?? 0) - 110) } : null;
+    }),
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
+      tooltip: { enabled: false },
       legend: { display: true, position: 'bottom' }
     },
     scales: {
+      x: {
+        ticks: {
+          autoSkip: true, maxTicksLimit: 5, maxRotation: 0, minRotation: 0,
+          callback: function(value) { return this.getLabelForValue(Number(value)).slice(0, 5); }
+        },
+        grid: { display: false }
+      },
       y: {
         type: 'linear',
         display: true,
@@ -117,7 +137,8 @@ export class HomePage implements OnInit, OnDestroy {
     private modalCtrl: ModalController,
     private route: ActivatedRoute,
     private router: Router,
-    public ajuda_odometro: ServicoAjudaOdometro
+    public ajuda_odometro: ServicoAjudaOdometro,
+    private ngZone: NgZone
   ) {
     addIcons({ add, colorFill, 'gas-station': 'assets/icon/gas-station.svg', 'chevron-down': chevronDown, 'chevron-up': chevronUp, speedometer, construct, car, map, create, settings, warningOutline });
     this.checkDarkMode();
@@ -136,16 +157,40 @@ export class HomePage implements OnInit, OnDestroy {
         this.observador_tema.disconnect();
       }
       this.observador_tema = new MutationObserver(aplicarTema);
-      this.observador_tema.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+      this.observador_tema.observe(document.body, { attributes: true, attributeFilter: ['class', 'style'] });
     }
   }
 
+  abrirCicloDoGrafico(index: number) {
+    const vehicle = this.vehicleService.getVehiclesSnapshot().find(v => v.plate === this.summaryVehiclePlate);
+    if (!vehicle) return;
+    const point = consumptionChartPoints(vehicle, this.vehicleService)[index];
+    if (!point?.cycleKey) return;
+    this.pontoConsumo = null;
+    this.router.navigate(['/supply-history'], { queryParams: { plate: vehicle.plate, view: 'cycles', cycle: point.cycleKey } });
+  }
+
   updateChartColors(isDark: boolean) {
+    const primaryColor = getComputedStyle(document.body).getPropertyValue('--ion-color-primary').trim() || '#3880ff';
+    this.consumptionChartData = {
+      ...this.consumptionChartData,
+      datasets: this.consumptionChartData.datasets.map(dataset => dataset.label?.startsWith('Ciclos de abastecimento')
+        ? { ...dataset, borderColor: primaryColor, pointBackgroundColor: primaryColor } : dataset)
+    };
     const textColor = isDark ? '#ffffff' : '#666666';
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
     const updateScales = (options: any) => {
-      const newOptions = JSON.parse(JSON.stringify(options)); // Deep clone to ensure change detection
+      // Keep Chart.js callbacks when refreshing theme colors.
+      const newOptions = {
+        ...options,
+        scales: { ...options?.scales },
+        plugins: { ...options?.plugins, legend: { ...options?.plugins?.legend } }
+      };
+      if (newOptions.scales.x) {
+        newOptions.scales.x = { ...newOptions.scales.x, ticks: { ...newOptions.scales.x.ticks, color: textColor } };
+      }
+      if (newOptions.scales.y) newOptions.scales.y = { ...newOptions.scales.y };
       if (newOptions.scales && newOptions.scales.y) {
         newOptions.scales.y.ticks = { ...newOptions.scales.y.ticks, color: textColor };
         newOptions.scales.y.grid = { ...newOptions.scales.y.grid, color: gridColor };
@@ -247,10 +292,14 @@ export class HomePage implements OnInit, OnDestroy {
     if (storedOrder) {
       try {
         const arr = JSON.parse(storedOrder);
-        const known = ['summary', 'quickActions', 'consumption', 'maintenance', 'history'];
+        const known = ['quickActions', 'summary', 'history', 'consumption', 'maintenance'];
         const filtered = Array.isArray(arr) ? arr.filter((k: string) => known.includes(k)) : [];
         const missing = known.filter(k => !filtered.includes(k));
-        this.homeCardOrder = [...filtered, ...missing];
+        // Upgrade the previous default layout while preserving custom card orders.
+        const previousDefault = ['summary', 'quickActions', 'consumption', 'maintenance', 'history'];
+        if (JSON.stringify(filtered) !== JSON.stringify(previousDefault)) {
+          this.homeCardOrder = [...filtered, ...missing];
+        }
       } catch {}
     }
     const storedEnabled = localStorage.getItem('home_card_enabled');
@@ -406,14 +455,6 @@ export class HomePage implements OnInit, OnDestroy {
     }
   }
 
-  alternarDetalhesCiclosConsumo(): void {
-    this.detalhesCiclosConsumoExpandidos = !this.detalhesCiclosConsumoExpandidos;
-  }
-
-  ciclosConsumoEstaoExpandidos(): boolean {
-    return this.detalhesCiclosConsumoExpandidos;
-  }
-
   getOrderIndex(key: string): number {
     const idx = this.homeCardOrder.indexOf(key);
     return idx === -1 ? 999 : idx;
@@ -472,6 +513,8 @@ export class HomePage implements OnInit, OnDestroy {
         this.lastConsumptionResult = 0;
         this.lastMaintenanceValue = 0;
         this.analiseConsumoResumo = { ciclosValidos: [], mediaConsumoKmPorLitro: 0, ciclosRejeitados: [] };
+        this.trechosPendentes = 0;
+        this.ciclosAtipicos = 0;
         this.consumptionChartData = { datasets: [], labels: [] };
         this.maintenanceChartData = { datasets: [], labels: [] };
         return;
@@ -503,7 +546,6 @@ export class HomePage implements OnInit, OnDestroy {
 
     // Média de consumo (Km/L) no resumo: apenas ciclos completos tanque cheio → tanque cheio
     this.analiseConsumoResumo = this.vehicleService.analisarCiclosConsumoPorTanqueCheio(vehicle);
-    this.detalhesCiclosConsumoExpandidos = false;
     this.avgConsumption =
       this.analiseConsumoResumo.ciclosValidos.length > 0
         ? this.analiseConsumoResumo.mediaConsumoKmPorLitro
@@ -615,63 +657,10 @@ export class HomePage implements OnInit, OnDestroy {
     // Last Date
     this.lastUpdateDate = new Date().toLocaleDateString('pt-BR');
 
-    // Chart Data - Consumption: registros de média (history) + consumo derivado dos abastecimentos, ordenados por data
-    const pontosConsumo: { data: Date; resultado: number }[] = [];
-    history.forEach(h => {
-      pontosConsumo.push({ data: new Date(h.date), resultado: h.result ?? 0 });
-    });
-    const suppliesOrdenados = [...supplies].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    suppliesOrdenados.forEach((atual, i) => {
-      let resultado = 0;
-      if (atual.average != null && atual.average > 0) {
-        resultado = atual.average;
-      } else if (atual.initialOdometer != null && atual.finalOdometer != null && atual.liters != null && atual.liters > 0 && atual.finalOdometer > atual.initialOdometer) {
-        resultado = (atual.finalOdometer - atual.initialOdometer) / atual.liters;
-      } else if (i > 0) {
-        const anterior = suppliesOrdenados[i - 1];
-        const odoAnterior = anterior.finalOdometer ?? anterior.initialOdometer ?? anterior.odometer ?? 0;
-        const odoAtual = atual.initialOdometer ?? atual.finalOdometer ?? atual.odometer ?? 0;
-        const litros = atual.liters ?? 0;
-        if (odoAtual > odoAnterior && litros > 0) {
-          resultado = (odoAtual - odoAnterior) / litros;
-        }
-      }
-      if (resultado > 0) {
-        pontosConsumo.push({ data: new Date(atual.date), resultado });
-      }
-    });
-    pontosConsumo.sort((a, b) => a.data.getTime() - b.data.getTime());
-    const porData = new Map<number, number>();
-    pontosConsumo.forEach(p => {
-      const dia = new Date(p.data.getFullYear(), p.data.getMonth(), p.data.getDate()).getTime();
-      porData.set(dia, p.resultado);
-    });
-    const sortedConsumption = Array.from(porData.entries())
-      .map(([t, resultado]) => ({ data: new Date(t), resultado }))
-      .sort((a, b) => a.data.getTime() - b.data.getTime());
-    const chartLabels = sortedConsumption.map(p => {
-      const d = p.data.toISOString().split('T')[0];
-      const [year, month, day] = d.split('-');
-      return `${day}/${month}/${year}`;
-    });
-    const chartValues = sortedConsumption.map(p => p.resultado);
-    this.consumptionChartData = {
-        datasets: [
-            {
-                data: chartValues,
-                label: 'Consumo (Km/L)',
-                backgroundColor: 'rgba(56, 128, 255, 0.2)',
-                borderColor: 'rgba(56, 128, 255, 1)',
-                pointBackgroundColor: 'rgba(56, 128, 255, 1)',
-                pointBorderColor: '#fff',
-                fill: 'origin',
-                tension: 0.4,
-                spanGaps: true,
-                borderWidth: 2
-            }
-        ],
-        labels: chartLabels
-    };
+    this.pontoConsumo = null;
+    this.trechosPendentes = this.analiseConsumoResumo.ciclosRejeitados.filter(c => !this.vehicleService.avisoConsumoDispensado(vehicle, c)).length;
+    this.ciclosAtipicos = this.vehicleService.identificarCiclosAtipicos(vehicle).filter(c => !this.vehicleService.avisoConsumoDispensado(vehicle, c)).length;
+    this.consumptionChartData = buildConsumptionChart(vehicle, this.vehicleService, getComputedStyle(document.body).getPropertyValue('--ion-color-primary').trim() || '#3880ff');
 
     // Chart Data - Maintenance
     // Sort maintenance by date

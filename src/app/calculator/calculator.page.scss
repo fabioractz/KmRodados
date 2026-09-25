@@ -299,63 +299,25 @@ body.dark .ios-btn-function {
 }
 
 
-/* Menu Styles */
-.menu-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-  justify-content: center;
-  align-items: stretch;
-  min-height: 60vh;
-}
-
-.menu-button {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  background: var(--ion-card-background, #fff);
-  border-radius: 20px;
-  padding: 14px 18px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-  cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-  
-  width: 100%;
-  height: auto;
-  
-  &:active {
-    transform: scale(0.95);
-    background: var(--ion-color-step-50, #f9f9f9);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  }
-
-  .menu-icon {
-    font-size: 36px;
-    margin-bottom: 8px;
-    color: var(--ion-color-primary);
-  }
-
-  .menu-text {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .menu-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--ion-text-color);
-    line-height: 1.3;
-  }
-
-  .menu-desc {
-    font-size: 13px;
-    color: var(--ion-color-medium);
-    line-height: 1.4;
-  }
-}
+/* Menu alinhado às páginas Mais e Configurações. */
+.menu-content { --background: var(--trip-bg); --padding-top: 0; }
+.calculator-menu { max-width: 640px; margin: auto; padding: calc(28px + var(--ion-safe-area-top, 0px)) 20px 32px; color: var(--trip-text); }
+.menu-eyebrow { margin: 0 0 9px; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--trip-muted); }
+.calculator-menu h1 { font-size: 30px; font-weight: 700; letter-spacing: -1px; margin: 0 0 8px; color: var(--trip-text); }
+.menu-description { font-size: 13px; line-height: 1.6; color: var(--trip-muted); margin: 0 0 26px; }
+.calculator-menu h2 { font-size: 13px; font-weight: 600; color: var(--trip-muted); margin: 24px 0 10px; }
+.menu-group { border: 1px solid var(--trip-line); border-radius: 18px; overflow: hidden; background: var(--trip-paper); }
+.menu-action { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 88px; padding: 18px 14px; border: 0; background: transparent; color: var(--trip-text); font: inherit; text-align: left; cursor: pointer; }
+.menu-action + .menu-action { border-top: 1px solid var(--trip-line); }
+.menu-action:active { background: color-mix(in srgb, var(--ion-color-primary) 8%, var(--trip-paper)); }
+.menu-action:focus-visible { outline: 2px solid var(--trip-accent); outline-offset: -3px; }
+.menu-symbol { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 13px; background: color-mix(in srgb, var(--ion-color-primary) 12%, var(--trip-paper)); }
+.menu-symbol ion-icon { font-size: 24px; color: var(--trip-accent); }
+.menu-copy { flex: 1; min-width: 0; }
+.menu-copy strong { display: block; font-size: 15px; font-weight: 600; }
+.menu-copy small { display: block; margin-top: 5px; font-size: 12px; line-height: 1.5; color: var(--trip-muted); }
+.menu-arrow { flex-shrink: 0; color: var(--trip-muted); font-size: 24px; }
+@media (max-width: 360px) { .calculator-menu { padding-inline: 16px; } }
 
 .linha-data-hora {
   display: flex;
@@ -553,3 +515,33 @@ input[type=number] {
   margin: 4px 0;
   font-size: 14px;
 }
+
+/* Formulário de viagem alinhado aos demais cadastros. */
+:host { --trip-bg: #f3f5f9; --trip-paper: #fff; --trip-text: #17243b; --trip-muted: #5b687d; --trip-line: #dce4ef; --trip-accent: var(--ion-color-primary-shade); }
+:host-context(body.dark) { --trip-bg: #10151e; --trip-paper: #1b2330; --trip-text: #eef3ff; --trip-muted: #b1bdd0; --trip-line: #384458; --trip-accent: var(--ion-color-primary-tint); }
+.trip-content { --background: var(--trip-bg); --padding-top: 0; }
+.trip-header ion-toolbar { --background: var(--trip-bg); --border-width: 0; }
+.trip-header ion-button { --color: var(--trip-accent); text-transform: none; }
+.trip-brand { color: var(--trip-muted); font-size: 10px; letter-spacing: 1.5px; font-weight: 700; margin-right: 20px; }
+.trip-form { max-width: 560px; margin: auto; padding: 0 6px 24px; color: var(--trip-text); }
+.trip-form h1 { color: var(--trip-text); font-size: 27px; font-weight: 700; letter-spacing: -1px; margin: 0 0 6px; }
+.trip-form h2 { color: var(--trip-text); font-size: 16px; font-weight: 600; margin: 22px 0 12px; }
+.trip-description { color: var(--trip-muted); font-size: 13px; line-height: 1.6; margin: 0 0 22px; }
+.trip-field { min-width: 0; margin-bottom: 16px; }
+.trip-label { display: block; color: var(--trip-muted); font-size: 12px; margin-bottom: 8px; }
+.trip-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.trip-field ion-input, .trip-field ion-select, .trip-field ion-textarea, .trip-readonly, .trip-date { background: var(--trip-paper); color: var(--trip-text); border: 1px solid var(--trip-line); border-radius: 12px; min-height: 50px; font-size: 16px; }
+.trip-field ion-input, .trip-field ion-textarea { --padding-start: 12px; --padding-end: 12px; --padding-top: 13px; --padding-bottom: 13px; --highlight-color-focused: transparent; --highlight-color-valid: transparent; --highlight-color-invalid: transparent; }
+.trip-field ion-select { padding: 0 12px; width: 100%; }
+.trip-readonly { padding: 14px 12px; }
+.trip-hint { color: var(--trip-muted); font-size: 11px; display: block; margin-top: 6px; line-height: 1.4; }
+.trip-date { display: flex; align-items: center; justify-content: center; }
+.trip-form ion-datetime-button::part(native) { background: transparent; color: var(--trip-text); font-size: 14px; }
+.trip-more { display: block; width: 100%; min-height: 50px; margin: 6px 0 16px; padding: 14px 0; border: 0; border-top: 1px solid var(--trip-line); background: transparent; color: var(--trip-accent); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.trip-form .trip-submit { --background: var(--ion-color-primary); --color: var(--ion-color-primary-contrast); --border-radius: 14px; --box-shadow: none; min-height: 52px; text-transform: none; letter-spacing: 0; margin: 20px 0 0; }
+.trip-result { margin-top: 20px; padding: 20px; border: 1px solid var(--trip-line); border-radius: 16px; background: var(--trip-paper); }
+.trip-result > span, .trip-result p { font-size: 13px; color: var(--trip-muted); line-height: 1.5; }
+.trip-result > strong { display: block; font-size: 32px; color: var(--trip-text); margin: 8px 0; overflow-wrap: anywhere; }
+.trip-validation { padding: 14px; border: 1px solid var(--ion-color-danger); border-radius: 12px; background: var(--trip-paper); color: var(--trip-text); font-size: 13px; margin-bottom: 18px; }
+.trip-invalid ion-input, .trip-invalid ion-select, .trip-invalid .trip-readonly, .trip-invalid .trip-date { outline: 2px solid var(--ion-color-danger); outline-offset: 1px; }
+.trip-field ion-input.has-focus, .trip-field ion-textarea.has-focus, .trip-more:focus-visible { outline: 2px solid var(--trip-accent); outline-offset: 2px; }

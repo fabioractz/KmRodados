@@ -1,3 +1,6 @@
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController, AlertController, ToastController } from '@ionic/angular';
 import { VehicleService, Vehicle, ConsumptionRecord } from '../../../services/vehicle.service';
@@ -7,7 +10,8 @@ import { ServicoAjudaOdometro } from '../../../services/ajuda-odometro.service';
   selector: 'app-consumption-modal',
   templateUrl: './consumption-modal.component.html',
   styleUrls: ['./consumption-modal.component.scss'],
-  standalone: false
+  standalone: true,
+  imports: [CommonModule, FormsModule, IonicModule]
 })
 export class ConsumptionModalComponent implements OnInit {
   @Input() vehicles: Vehicle[] = [];

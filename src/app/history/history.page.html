@@ -1,21 +1,8 @@
-<ion-header [translucent]="true" mode="ios">
-  <ion-toolbar>
-    <ion-title>Histórico</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense" mode="ios">
-    <ion-toolbar>
-      <ion-title size="large">Histórico</ion-title>
-      <ion-buttons slot="end">
-        <ion-button class="botao-menu-historico" (click)="confirmar_limpar_historico()" title="Apagar todo o histórico">
-          <ion-icon slot="icon-only" name="trash"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ion-toolbar>
-  </ion-header>
-
+<ion-content class="history-content">
+  <main class="history-layout">
+    <header class="history-heading"><div><p class="eyebrow">KM RODADOS</p><h1>Histórico</h1><p class="history-subtitle">Seus registros, organizados por data.</p></div>
+      <ion-button fill="clear" (click)="confirmar_limpar_historico()" aria-label="Apagar todo o histórico"><ion-icon slot="icon-only" name="trash-outline"></ion-icon></ion-button>
+    </header>
   <ion-item lines="full" class="item-filtros">
     <div class="linha-filtros">
       <div class="filtro-inline">
@@ -51,92 +38,27 @@
     </div>
   </ion-item>
 
-  <ion-list class="lista-historico" lines="none">
-    <div
-      *ngFor="let item of historicoCompleto; let i = index"
-      class="grupo-historico">
-    <ion-item
-      class="item-historico item-historico-clicavel ion-align-items-center"
-      button="true"
-      detail="false"
-      (click)="alternarExpansaoHistorico(item)">
-      <div
-        slot="start"
-        class="caixa-icone-historico"
-        [ngClass]="{
-          'caixa-icone-abastecimento': item.type === 'supply',
-          'caixa-icone-manutencao': item.type === 'maintenance',
-          'caixa-icone-consumo': item.type === 'consumption',
-          'caixa-icone-viagem': item.type === 'trip',
-          'caixa-icone-veiculo': item.type === 'vehicle-add',
-          'caixa-icone-despesa': item.type === 'expense',
-          'caixa-icone-receita': item.type === 'income'
-        }"
-      >
-        <ion-icon [name]="obter_icone_item_historico(item)"></ion-icon>
-      </div>
-      <!-- div em vez de ion-label: o Ionic força :host-context(.item){display:block} no ion-label e impede alinhar chevron/texto na vertical -->
-      <div class="ion-text-wrap rotulo-cabecalho-historico">
-        <div class="linha-cabecalho-historico">
-          <ion-icon
-            class="icone-expansao-historico"
-            [name]="itemHistoricoEstaExpandido(item) ? 'chevron-up' : 'chevron-down'"
-            aria-hidden="true">
-          </ion-icon>
-          <div class="texto-cabecalho-historico">
-            <!-- Mesmo texto que "Registros recentes" na Início -->
-            <h2 class="titulo-linha-historico">{{ item.date | date:'dd/MM/yyyy' }} - {{ item.vehicle.model }}</h2>
-            <p *ngIf="item.type === 'supply'" class="descricao-resumo-historico">
-              {{ item.data.gasStation ? item.data.gasStation + ' - ' : '' }}
-              {{ item.data.totalValue | currency:'BRL' }} ({{ item.data.liters }}L)
-            </p>
-            <p *ngIf="item.type === 'consumption'" class="descricao-resumo-historico">
-              Média: {{ item.data.result | number:'1.2-2' }} km/l ({{ item.data.distance }}km)
-            </p>
-            <p *ngIf="item.type === 'maintenance'" class="descricao-resumo-historico">
-              {{ item.data.summary }} - {{ item.data.totalValue | currency:'BRL' }}
-            </p>
-            <p *ngIf="item.type === 'trip'" class="descricao-resumo-historico">
-              Viagem: {{ item.data.distance }}km - Custo: {{ item.data.totalCost | currency:'BRL' }}
-            </p>
-            <p *ngIf="item.type === 'trip' && item.data.observations" class="descricao-resumo-historico descricao-resumo-secundaria-historico">
-              {{ item.data.observations }}
-            </p>
-            <p *ngIf="item.type === 'expense'" class="descricao-resumo-historico">
-              Despesa: {{ item.data.type || 'Geral' }} - {{ item.data.cost | currency:'BRL' }}
-            </p>
-            <p *ngIf="item.type === 'income'" class="descricao-resumo-historico">
-              Receita: {{ item.data.type || 'Geral' }} - {{ item.data.amount | currency:'BRL' }}
-            </p>
-            <p *ngIf="item.type === 'vehicle-add'" class="descricao-resumo-historico">
-              Veículo Adicionado: {{ item.data.model }} ({{ item.data.plate | uppercase }})
-            </p>
-          </div>
-        </div>
-      </div>
-      <ion-buttons slot="end" class="botoes-acao" (click)="pararPropagacaoClique($event)">
-        <ion-button
-          fill="clear"
-          size="default"
-          (click)="editar_item_historico(item)"
-          [style.visibility]="podeEditar(item) ? 'visible' : 'hidden'"
-          [disabled]="!podeEditar(item)">
-          <ion-icon name="create" slot="icon-only"></ion-icon>
-        </ion-button>
-        <ion-button
-          fill="clear"
-          size="default"
-          color="danger"
-          (click)="remover_item_historico(item)"
-          [style.visibility]="podeApagar(item) ? 'visible' : 'hidden'"
-          [disabled]="!podeApagar(item)">
-          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ion-item>
-
-    <div *ngIf="itemHistoricoEstaExpandido(item)" class="detalhes-expandidos-historico detalhes-historico-fora-item" (click)="pararPropagacaoClique($event)">
-
+<section class="history-records" aria-label="Registros">
+<ng-container *ngFor="let item of historicoCompleto; let i = index">
+  <h2 class="month-heading" *ngIf="(criterio_ordenacao === 'data_recente' || criterio_ordenacao === 'data_antiga') && (i === 0 || (item.date | date:'yyyy-MM') !== (historicoCompleto[i - 1].date | date:'yyyy-MM'))">{{ item.date | date:'MMMM yyyy' }}</h2>
+  <article class="history-record" [class.expanded]="itemHistoricoEstaExpandido(item)">
+    <button type="button" class="record-summary" (click)="alternarExpansaoHistorico(item)" [attr.aria-expanded]="itemHistoricoEstaExpandido(item)" [attr.aria-controls]="'history-detail-' + i">
+      <span class="record-icon"><ion-icon [name]="obter_icone_item_historico(item)" aria-hidden="true"></ion-icon></span>
+      <span class="record-copy"><strong>{{ item.type === 'supply' ? 'Abastecimento' : item.type === 'maintenance' ? 'Manutenção' : item.type === 'consumption' ? 'Média de consumo' : item.type === 'trip' ? 'Viagem' : item.type === 'expense' ? 'Despesa' : item.type === 'income' ? 'Receita' : 'Veículo adicionado' }}</strong>
+      <small>{{ item.date | date:'dd MMM' }} · {{ item.vehicle.model }}<span *ngIf="item.type === 'supply'"> · {{ item.data.liters | number:'1.0-3' }} L</span></small></span>
+      <span class="record-value" [ngSwitch]="item.type">
+        <ng-container *ngSwitchCase="'supply'">{{ item.data.totalValue | currency:'BRL' }}</ng-container>
+        <ng-container *ngSwitchCase="'maintenance'">{{ item.data.totalValue | currency:'BRL' }}</ng-container>
+        <ng-container *ngSwitchCase="'trip'">{{ item.data.totalCost | currency:'BRL' }}</ng-container>
+        <ng-container *ngSwitchCase="'expense'">{{ item.data.cost | currency:'BRL' }}</ng-container>
+        <ng-container *ngSwitchCase="'income'">{{ item.data.amount | currency:'BRL' }}</ng-container>
+        <ng-container *ngSwitchCase="'consumption'">{{ item.data.result | number:'1.2-2' }} km/L</ng-container>
+      </span>
+      <ion-icon class="record-chevron" [name]="itemHistoricoEstaExpandido(item) ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></ion-icon>
+    </button>
+    <div *ngIf="itemHistoricoEstaExpandido(item)" class="record-details" [id]="'history-detail-' + i">
+      <p><strong>Data e hora:</strong> {{ item.date | date:'dd/MM/yyyy HH:mm' }}</p>
+      <p><strong>Veículo:</strong> {{ item.vehicle.model }} · {{ item.vehicle.plate | uppercase }}</p>
           <ng-container *ngIf="item.type === 'supply'">
             <p *ngIf="item.data.gasStation"><strong>Posto:</strong> {{ item.data.gasStation }}</p>
             <p *ngIf="item.data.liters != null"><strong>Litros:</strong> {{ item.data.liters | number:'1.2-2' }} L</p>
@@ -208,10 +130,9 @@
             <p *ngIf="item.data.reminderEnabled"><strong>Lembrete:</strong> Ativado<span *ngIf="item.data.reminderTime"> ({{ item.data.reminderTime }})</span></p>
             <p *ngIf="item.data.notes"><strong>Notas:</strong> {{ item.data.notes }}</p>
           </ng-container>
-    </div>
-    </div>
-    <ion-item *ngIf="historicoCompleto.length === 0">
-      <ion-label class="ion-text-center">Nenhum registro encontrado</ion-label>
-    </ion-item>
-  </ion-list>
-</ion-content>
+<div class="record-actions">
+<ion-button *ngIf="podeEditar(item)" fill="clear" (click)="editar_item_historico(item)"><ion-icon name="create" slot="start"></ion-icon>Editar</ion-button>
+<ion-button *ngIf="podeApagar(item)" fill="clear" color="danger" (click)="remover_item_historico(item)"><ion-icon name="trash-outline" slot="start"></ion-icon>Excluir</ion-button>
+</div></div></article></ng-container>
+<p class="empty-history" *ngIf="historicoCompleto.length === 0">Nenhum registro encontrado.</p>
+</section></main></ion-content>

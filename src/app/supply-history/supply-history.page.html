@@ -3,48 +3,134 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/home" text="Voltar"></ion-back-button>
     </ion-buttons>
-    <ion-title>Histórico de Abastecimentos</ion-title>
+    <ion-title>Histórico</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense" mode="ios">
-    <ion-toolbar>
-      <ion-title size="large">Histórico de Abastecimentos</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  <div *ngIf="supplies.length === 0" class="ion-padding ion-text-center">
-    <p>Nenhum abastecimento registrado.</p>
-  </div>
+<ion-content>
+  <div class="history-layout">
+  <h1>Abastecimentos e ciclos</h1>
+  <p class="vehicle-context" *ngIf="placaFiltrada">Veículo · {{ placaFiltrada }}</p>
+  <ion-segment [(ngModel)]="view" aria-label="Seções do histórico">
+    <ion-segment-button value="supplies"><ion-label>Registros</ion-label></ion-segment-button>
+    <ion-segment-button value="cycles"><ion-label>Ciclos ({{ cycles.length }})</ion-label></ion-segment-button>
+    <ion-segment-button value="issues"><ion-label>Revisar ({{ issues.length }})</ion-label></ion-segment-button>
+  </ion-segment>
+  <button *ngIf="issues.length && view !== 'issues'" type="button" class="review-banner" (click)="abrirRevisao()">
+    <ion-icon name="warning-outline" aria-hidden="true"></ion-icon>
+    <span><strong>{{ issues.length }} {{ issues.length === 1 ? 'trecho para revisar' : 'trechos para revisar' }}</strong><small>Veja as diferenças e confira os abastecimentos</small></span>
+    <span aria-hidden="true">→</span>
+  </button>
+  <p *ngIf="adjustmentMessage" class="adjustment-result" [class.adjustment-result-warning]="adjustmentStatus === 'warning'" role="status" aria-live="polite">{{ adjustmentMessage }}</p>
+  <section *ngIf="view === 'issues'" class="cycles-section">
+    <h2>Trechos para revisar</h2>
+    <p class="section-description">Confira o motivo e toque em um abastecimento para corrigir seus dados. Os ciclos são recalculados após salvar. Descartar um aviso apenas o oculta; não exclui os abastecimentos.</p>
+    <p *ngIf="issues.length === 0" class="empty-message">Nenhum trecho pendente de revisão.</p>
+    <article class="cycle-card" *ngFor="let cycle of issues">
+      <ng-container *ngTemplateOutlet="cycleHeader; context: { $implicit: cycle }"></ng-container>
+      <ng-container *ngTemplateOutlet="cycleReview; context: { $implicit: cycle }"></ng-container>
+    </article>
+  </section>
+  <section *ngIf="view === 'cycles'" class="cycles-section">
+    <h2>{{ cicloSelecionado ? 'Detalhes do ciclo selecionado' : 'Ciclos de consumo' }}</h2>
+    <ion-button *ngIf="cicloSelecionado" fill="clear" (click)="verTodosOsCiclos()">Ver todos os ciclos</ion-button>
+    <p *ngIf="cicloSelecionado && !ciclosExibidos.length" class="empty-message">Este ciclo mudou após a edição. Consulte todos os ciclos ou a aba Revisar.</p>
+    <p class="section-description">Do tanque cheio ao próximo tanque cheio, incluindo os abastecimentos parciais entre eles.</p>
+    <p *ngIf="cycles.length === 0" class="empty-message">Nenhum ciclo válido. Registre dois tanques cheios ou consulte os trechos para ajustar.</p>
+    <article class="cycle-card" *ngFor="let cycle of ciclosExibidos">
+      <ng-container *ngTemplateOutlet="cycleHeader; context: { $implicit: cycle }"></ng-container>
+      <ng-container *ngTemplateOutlet="cycleReview; context: { $implicit: cycle }"></ng-container>
+    </article>
+  </section>
+  <ng-template #cycleReview let-cycle>
+      <ng-container *ngIf="cycle.reason && !cycle.comparison">
+        <span class="comparison-badge"><ion-icon name="warning-outline" aria-hidden="true"></ion-icon>{{ cycle.suspicious ? 'Consumo fora do padrão' : 'Dados inconsistentes' }}</span>
+        <p class="issue-reason">{{ cycle.reason }}</p>
+        <p *ngIf="!cycle.suspicious" class="comparison-note">Confira o odômetro nos registros abaixo. Ao salvar um ajuste, o app verifica novamente este trecho.</p>
+      </ng-container>
+      <div *ngIf="cycle.consumption != null" class="cycle-metrics"><strong>{{ cycle.consumption | number:'1.2-2' }} km/L</strong><span>{{ cycle.distance | number:'1.0-0' }} km · {{ cycle.liters | number:'1.2-2' }} L</span></div>
+      <div *ngIf="cycle.comparison as comparison" class="cycle-comparison">
+        <span class="comparison-badge"><ion-icon name="warning-outline" aria-hidden="true"></ion-icon>Rendimento {{ comparison.above ? 'acima' : 'abaixo' }} do padrão</span>
+        <p class="comparison-callout">O habitual é cerca de {{ comparison.reference | number:'1.0-2' }} km/L. Neste ciclo, o resultado foi {{ cycle.consumption | number:'1.2-2' }} km/L. Confira os registros abaixo.</p>
+        <div class="comparison-label"><span>Demais ciclos</span><strong>{{ comparison.reference | number:'1.2-2' }} km/L</strong></div>
+        <div class="comparison-track" aria-hidden="true"><span [style.width.%]="comparison.referenceWidth"></span></div>
+        <div class="comparison-label"><span>Este ciclo</span><strong>{{ cycle.consumption | number:'1.2-2' }} km/L</strong></div>
+        <div class="comparison-track" aria-hidden="true"><span [style.width.%]="comparison.cycleWidth"></span></div>
+        <p class="comparison-note">A comparação usa o valor central dos demais ciclos válidos do veículo. Um resultado diferente nem sempre indica erro.</p>
+      </div>
+      <div *ngIf="cycle.reason && !cycle.suspicious" class="cycle-comparison">
+        <div class="comparison-label"><span>Demais ciclos</span><strong>{{ cycle.reference != null ? (cycle.reference | number:'1.2-2') + ' km/L' : 'Sem referência' }}</strong></div>
+        <div class="comparison-track" aria-hidden="true"><span [style.width.%]="cycle.reference != null ? 100 : 0"></span></div>
+        <div class="comparison-label"><span>Este ciclo</span><strong>A corrigir</strong></div>
+        <div class="comparison-track" aria-hidden="true"></div>
+        <p class="comparison-note">O consumo deste ciclo ficará disponível após corrigir os dados. A barra acima mostra o valor habitual dos ciclos válidos do veículo.</p>
+      </div>
+      <details class="cycle-details" [open]="!!cicloSelecionado || reviewFocusKey === cycle.reviewKey || (view === 'issues' && !cycle.suspicious)">
+        <summary>{{ cycle.reason || cycle.comparison ? 'Conferir o que gerou a diferença' : 'Ver cálculo e abastecimentos' }}</summary>
 
-  <ion-list *ngIf="supplies.length > 0">
-    <ion-item *ngFor="let supply of supplies">
-      <ion-label>
-        <h2>{{ supply.vehicleModel }} <small>({{ supply.vehiclePlate }})</small></h2>
-        <p><strong>Data:</strong> {{ supply.date | date:'dd/MM/yyyy' }}</p>
-        <p *ngIf="supply.tipoAbastecimento"><strong>Abastecimento:</strong> {{ supply.tipoAbastecimento }}</p>
-        <p *ngIf="supply.gasStation"><strong>Posto:</strong> {{ supply.gasStation }}</p>
-        <p *ngIf="supply.odometer">
-          <strong>Odômetro:</strong>
-          <span
-            class="icone-ajuda-odometro"
-            tabindex="0"
-            (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</span>
-          {{ supply.odometer }} km
-        </p>
-        <p *ngIf="supply.liters && supply.totalValue">
-          {{ supply.liters }}L - R$ {{ supply.totalValue | number:'1.2-2' }}
-        </p>
-        <p *ngIf="supply.observations"><em>{{ supply.observations }}</em></p>
-      </ion-label>
-      <ion-buttons slot="end">
-        <ion-button fill="clear" (click)="editar_abastecimento(supply)">
-          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-        </ion-button>
-        <ion-button fill="clear" color="danger" (click)="remover_abastecimento(supply)">
-          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ion-item>
-  </ion-list>
+        <ng-container *ngTemplateOutlet="cycleRecords; context: { $implicit: cycle }"></ng-container>
+        <p class="comparison-note">Confira também se faltou registrar algum abastecimento.</p>
+        <div *ngIf="cycle.reason || cycle.comparison" class="dismiss-review">
+          <ion-button fill="clear" size="small" (click)="dispensarAviso(cycle)">Já conferi · dispensar aviso</ion-button>
+          <p class="comparison-note">Dispensar oculta o aviso. Os registros são mantidos e os cálculos não são alterados.</p>
+        </div>
+      </details>
+  </ng-template>
+  <ng-template #cycleHeader let-cycle>
+    <h3>{{ cycle.vehicleModel }} <small>{{ cycle.vehiclePlate }}</small></h3>
+    <p class="cycle-period">{{ cycle.supplies[0].date | date:'dd/MM/yyyy' }} → {{ cycle.supplies[cycle.supplies.length - 1].date | date:'dd/MM/yyyy' }}</p>
+  </ng-template>
+  <ng-template #cycleRecords let-cycle>
+    <button type="button" class="cycle-record" *ngFor="let supply of cycle.supplies; let first = first; let last = last" aria-label="Editar abastecimento" (click)="abrirAjuste(cycle, supply, first ? 'Início' : last ? 'Fim' : 'Intermediário')">
+      <span><strong>{{ first ? 'Início' : last ? 'Fim' : 'Intermediário' }} - {{ supply.date | date:'dd/MM/yyyy' }}</strong><small> {{ supply.tanqueCompleto === false ? 'Parcial' : 'Tanque cheio' }}</small>
+        <small>Odômetro: {{ (supply.initialOdometer ?? supply.odometer ?? supply.finalOdometer) != null ? ((supply.initialOdometer ?? supply.odometer ?? supply.finalOdometer) | number:'1.0-0') + ' km' : 'Não informado' }}</small>
+        <small *ngIf="supply.finalOdometer != null && supply.finalOdometer !== supply.initialOdometer">Odômetro final: {{ supply.finalOdometer | number:'1.0-0' }} km</small>
+        <small>{{ supply.liters != null ? (supply.liters | number:'1.2-3') + ' L' : 'Litros não informados' }} · {{ supply.totalValue | currency:'BRL' }}</small>
+      </span><span class="edit-label">Editar <ion-icon name="create-outline" aria-hidden="true"></ion-icon></span>
+    </button>
+    <ng-container *ngIf="adjustment as edit">
+      <form *ngIf="edit.cycleKey === cycle.reviewKey && edit.supply.vehiclePlate === cycle.vehiclePlate" class="inline-adjustment" (ngSubmit)="salvarAjuste()">
+        <h4>{{ edit.title }} - {{ edit.supply.date | date:'dd/MM/yyyy' }}</h4>
+        <label>Odômetro (km)<input name="odometer" type="tel" inputmode="numeric" placeholder="0" required [value]="formatarOdometroAjuste(edit.odometer)" (input)="atualizarOdometroAjuste($event, 'odometer')"></label>
+        <label *ngIf="edit.supply.finalOdometer != null && (edit.supply.initialOdometer != null || edit.supply.odometer != null)">Odômetro final (km)<input name="finalOdometer" type="tel" inputmode="numeric" placeholder="0" required [value]="formatarOdometroAjuste(edit.finalOdometer)" (input)="atualizarOdometroAjuste($event, 'finalOdometer')"></label>
+        <label>Litros<input name="liters" type="number" min="0.001" step="any" required [(ngModel)]="edit.liters"></label>
+        <label class="full-tank"><input name="full" type="checkbox" [(ngModel)]="edit.full">Completei o tanque</label>
+        <p class="comparison-note">Ao ajustar os litros, o valor total é mantido e o preço por litro é recalculado.</p>
+        <p *ngIf="adjustmentError" role="alert" class="issue-reason">{{ adjustmentError }}</p>
+        <div class="adjustment-actions"><button type="submit">Salvar ajuste</button><button type="button" (click)="adjustment = null">Cancelar</button></div>
+        <button type="button" class="complete-edit" (click)="editar_abastecimento(edit.supply); adjustment = null">Abrir edição completa</button>
+      </form>
+    </ng-container>
+  </ng-template>
+  <section *ngIf="view === 'supplies'" class="supply-records" aria-label="Todos os abastecimentos">
+    <p *ngIf="supplies.length === 0" class="empty-message">Nenhum abastecimento registrado.</p>
+    <ng-container *ngFor="let supply of supplies; let index = index">
+      <h2 class="supply-month" *ngIf="index === 0 || (supply.date | date:'yyyy-MM') !== (supplies[index - 1].date | date:'yyyy-MM')">{{ supply.date | date:'MMMM \'de\' yyyy' }}</h2>
+      <article class="supply-card">
+        <header class="supply-heading">
+          <span class="supply-icon"><ion-icon name="gas-station" aria-hidden="true"></ion-icon></span>
+          <div class="supply-identity"><h3>{{ supply.vehicleModel }}</h3><span>{{ supply.vehiclePlate }}</span></div>
+          <time>{{ supply.date | date:'dd/MM/yyyy' }}</time>
+        </header>
+        <div class="supply-amounts" *ngIf="supply.totalValue != null || supply.liters != null">
+          <strong *ngIf="supply.totalValue != null">{{ supply.totalValue | currency:'BRL' }}</strong>
+          <span *ngIf="supply.liters != null">{{ supply.liters | number:'1.0-3' }} L</span>
+        </div>
+        <dl class="supply-fields">
+          <div *ngIf="supply.tipoAbastecimento"><dt>Abastecimento</dt><dd>{{ supply.tipoAbastecimento }}</dd></div>
+          <div *ngIf="(supply.initialOdometer ?? supply.odometer ?? supply.finalOdometer) != null">
+            <dt>Odômetro <button type="button" class="supply-help" aria-label="Ajuda sobre o odômetro" (click)="ajuda_odometro.mostrarAjudaOdometro($event)">?</button></dt>
+            <dd>{{ (supply.initialOdometer ?? supply.odometer ?? supply.finalOdometer) | number:'1.0-0' }} km</dd>
+          </div>
+          <div *ngIf="supply.gasStation" class="supply-station"><dt>Posto</dt><dd>{{ supply.gasStation }}</dd></div>
+        </dl>
+        <p *ngIf="supply.observations" class="supply-observations"><span>Observações</span>{{ supply.observations }}</p>
+        <footer class="supply-actions">
+          <button type="button" (click)="editar_abastecimento(supply)"><ion-icon name="create-outline" aria-hidden="true"></ion-icon>Editar registro</button>
+          <button type="button" class="supply-delete" (click)="remover_abastecimento(supply)"><ion-icon name="trash-outline" aria-hidden="true"></ion-icon>Excluir</button>
+        </footer>
+      </article>
+    </ng-container>
+  </section>
+  </div>
 </ion-content>

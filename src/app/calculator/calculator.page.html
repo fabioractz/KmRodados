@@ -1,127 +1,94 @@
-<ion-header [translucent]="true" mode="ios">
+<ion-header *ngIf="currentView !== 'menu'" [translucent]="currentView !== 'trip'" mode="ios" [class.trip-header]="currentView === 'trip'">
   <ion-toolbar>
-    <ion-buttons slot="start" *ngIf="currentView !== 'menu'">
+    <ion-buttons slot="start">
       <ion-button (click)="setView('menu')">
         <ion-icon slot="start" name="chevron-back-outline"></ion-icon>
         Voltar
       </ion-button>
     </ion-buttons>
-    <ion-title>
-      {{ currentView === 'menu' ? 'Calcular' : 
-         currentView === 'trip' ? 'Calcular Viagem' : 
-         currentView === 'consumption' ? 'Fazer Média' : 'Calculadora' }}
+    <ion-title *ngIf="currentView !== 'trip'">
+      {{ currentView === 'consumption' ? 'Fazer Média' : 'Calculadora' }}
     </ion-title>
+  <span slot="end" class="trip-brand" *ngIf="currentView === 'trip'">KM RODADOS</span>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" [class.ios-calculator-content]="currentView === 'simple'">
-  <ion-header collapse="condense" mode="ios">
+<ion-content [fullscreen]="currentView !== 'trip' && currentView !== 'menu'" [class.menu-content]="currentView === 'menu'" [class.trip-content]="currentView === 'trip'" [class.ios-calculator-content]="currentView === 'simple'">
+  <ion-header collapse="condense" mode="ios" *ngIf="currentView !== 'trip' && currentView !== 'menu'">
     <ion-toolbar>
       <ion-title size="large">
-        {{ currentView === 'menu' ? 'Calcular' : 
-           currentView === 'trip' ? 'Calcular Viagem' : 
-           currentView === 'consumption' ? 'Fazer Média' : 'Calculadora' }}
+        {{ currentView === 'consumption' ? 'Fazer Média' : 'Calculadora' }}
       </ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <div class="ion-padding" [class.no-padding-calc]="currentView === 'simple'">
+  <div class="ion-padding" [class.no-padding-calc]="currentView === 'simple' || currentView === 'menu'">
 
-  <!-- MENU VIEW -->
-  <div *ngIf="currentView === 'menu'" class="menu-container">
-    <div class="menu-button" (click)="setView('consumption')">
-      <ion-icon class="menu-icon" name="speedometer-outline"></ion-icon>
-      <div class="menu-text">
-        <div class="menu-title">Fazer Média</div>
-        <div class="menu-desc">Calcule a média de consumo do seu veículo usando odômetro e litros.</div>
+  <main *ngIf="currentView === 'menu'" class="calculator-menu">
+    <header><p class="menu-eyebrow">KM RODADOS</p><h1>Calcular</h1><p class="menu-description">Consumo, viagens e contas do dia a dia.</p></header>
+    <section aria-labelledby="vehicle-tools-heading">
+      <h2 id="vehicle-tools-heading">Seu veículo</h2>
+      <div class="menu-group">
+        <button type="button" class="menu-action" (click)="setView('consumption')">
+          <span class="menu-symbol"><ion-icon name="speedometer-outline" aria-hidden="true"></ion-icon></span>
+          <span class="menu-copy"><strong>Fazer média</strong><small>Calcule o consumo por km/L</small></span>
+          <span class="menu-arrow" aria-hidden="true">›</span>
+        </button>
+        <button type="button" class="menu-action" (click)="setView('trip')">
+          <span class="menu-symbol"><ion-icon name="map-outline" aria-hidden="true"></ion-icon></span>
+          <span class="menu-copy"><strong>Calcular viagem</strong><small>Estime combustível e pedágios</small></span>
+          <span class="menu-arrow" aria-hidden="true">›</span>
+        </button>
+      </div>
+    </section>
+    <section aria-labelledby="tools-heading">
+      <h2 id="tools-heading">Ferramentas</h2>
+      <div class="menu-group">
+        <button type="button" class="menu-action" (click)="setView('simple')">
+          <span class="menu-symbol"><ion-icon name="calculator-outline" aria-hidden="true"></ion-icon></span>
+          <span class="menu-copy"><strong>Calculadora</strong><small>Faça contas rápidas</small></span>
+          <span class="menu-arrow" aria-hidden="true">›</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <main *ngIf="currentView === 'trip'" class="trip-form">
+    <h1>{{ isEditing ? 'Editar viagem' : 'Calcular viagem' }}</h1>
+    <p class="trip-description">Estime os gastos com combustível e pedágios.</p>
+    <div *ngIf="tripHasValidationErrors" class="trip-validation" role="alert"><strong>Confira os campos obrigatórios:</strong><ul><li *ngFor="let field of tripMissingFields">{{ field }}</li></ul></div>
+    <div class="trip-field" [class.trip-invalid]="tripVehicleError">
+      <span class="trip-label" id="trip-vehicle-label">Veículo *</span>
+      <ion-select aria-labelledby="trip-vehicle-label" placeholder="Escolha um veículo" [(ngModel)]="selectedVehicle" (ionChange)="onVehicleChange(); tripVehicleError = false">
+        <ion-select-option *ngFor="let vehicle of vehicles" [value]="vehicle">{{ vehicle.model }} · {{ vehicle.plate | uppercase }}</ion-select-option>
+      </ion-select>
+    </div>
+    <h2>Dados da viagem</h2>
+    <div class="trip-field" [class.trip-invalid]="tripDistanceError">
+      <span class="trip-label" id="trip-distance-label">Distância total (km) *</span>
+      <ion-input aria-labelledby="trip-distance-label" type="number" inputmode="decimal" placeholder="Ex.: 300" [(ngModel)]="distance" (ionInput)="tripDistanceError = false"></ion-input>
+    </div>
+    <div class="trip-grid">
+      <div class="trip-field" [class.trip-invalid]="tripConsumptionError">
+        <span class="trip-label" id="trip-consumption-label">Consumo (km/L) *</span>
+        <div class="trip-readonly" aria-labelledby="trip-consumption-label">{{ selectedVehicle ? (mediaConsumoResumoViagem | number:'1.2-2') : '—' }}</div>
+        <small class="trip-hint">Média automática do veículo</small>
+      </div>
+      <div class="trip-field" [class.trip-invalid]="tripFuelPriceError">
+        <span class="trip-label" id="trip-fuel-label">Preço por litro (R$) *</span>
+        <ion-input aria-labelledby="trip-fuel-label" type="tel" inputmode="decimal" placeholder="0,00" [(ngModel)]="fuelPriceStr" (ionInput)="formatCurrency($event); tripFuelPriceError = false"></ion-input>
       </div>
     </div>
-    
-    <div class="menu-button" (click)="setView('trip')">
-      <ion-icon class="menu-icon" name="map-outline"></ion-icon>
-      <div class="menu-text">
-        <div class="menu-title">Calcular Viagem</div>
-        <div class="menu-desc">Planeje e veja quanto vai gastar em combustível e pedágios.</div>
-      </div>
+    <div class="trip-field">
+      <span class="trip-label" id="trip-toll-label">Pedágios (R$)</span>
+      <ion-input aria-labelledby="trip-toll-label" type="tel" inputmode="decimal" placeholder="0,00" [(ngModel)]="tollPriceStr" (ionInput)="formatCurrencyToll($event)"></ion-input>
     </div>
-
-    <div class="menu-button" (click)="setView('simple')">
-      <ion-icon class="menu-icon" name="calculator-outline"></ion-icon>
-      <div class="menu-text">
-        <div class="menu-title">Calculadora</div>
-        <div class="menu-desc">Calculadora rápida para contas simples quando precisar.</div>
+    <button type="button" class="trip-more" [attr.aria-expanded]="mostrarMaisCampos" aria-controls="trip-additional" (click)="mostrarMaisCampos = !mostrarMaisCampos">{{ mostrarMaisCampos ? '−' : '+' }} Data, hora e observações</button>
+    <div id="trip-additional" *ngIf="mostrarMaisCampos">
+      <div class="trip-grid">
+        <div class="trip-field" [class.trip-invalid]="tripDateError"><span class="trip-label">Data *</span><div class="trip-date"><ion-datetime-button datetime="trip-datetime"></ion-datetime-button></div></div>
+        <div class="trip-field"><span class="trip-label">Hora</span><div class="trip-date"><ion-datetime-button datetime="trip-time"></ion-datetime-button></div></div>
       </div>
-    </div>
-  </div>
-
-  <!-- TRIP CALCULATOR VIEW (Existing Logic) -->
-  <div *ngIf="currentView === 'trip'">
-    <div class="ion-padding-bottom">
-      <p>Calcule quanto você vai gastar na sua viagem.</p>
-    </div>
-
-    <ion-card *ngIf="tripHasValidationErrors" class="validation-card">
-      <ion-card-content>
-        <p><strong>Campos obrigatórios não preenchidos:</strong></p>
-        <ul>
-          <li *ngFor="let field of tripMissingFields">{{ field }}</li>
-        </ul>
-      </ion-card-content>
-    </ion-card>
-
-    <ion-list>
-      <!-- 1. Veículo -->
-      <ion-item [class.required-field]="tripVehicleError">
-        <ion-select label="Selecione o Veículo *" label-placement="floating" placeholder="Escolha um veículo" [(ngModel)]="selectedVehicle" (ionChange)="onVehicleChange(); tripVehicleError = false">
-          <ion-select-option *ngFor="let vehicle of vehicles" [value]="vehicle">
-            {{ vehicle.model }} ({{ vehicle.plate | uppercase }})
-          </ion-select-option>
-        </ion-select>
-      </ion-item>
-
-      <!-- 2. Distância -->
-      <ion-item [class.required-field]="tripDistanceError">
-        <ion-input label="Distância (km) *" type="number" inputmode="numeric" label-placement="floating" placeholder="Ex: 150" [(ngModel)]="distance" (ionInput)="tripDistanceError = false"></ion-input>
-      </ion-item>
-
-      <!-- 3. Preço do Combustível -->
-      <ion-item [class.required-field]="tripFuelPriceError">
-        <ion-input label="Preço do Combustível (R$) *" type="tel" inputmode="decimal" label-placement="floating" placeholder="R$ 0,00" [(ngModel)]="fuelPriceStr" (ionInput)="formatCurrency($event); tripFuelPriceError = false"></ion-input>
-      </ion-item>
-
-      <!-- 4. Consumo do veículo *: média automática dos abastecimentos (somente leitura) -->
-      <ion-item *ngIf="selectedVehicle" [class.required-field]="tripConsumptionError">
-        <ion-label>
-          Consumo do veículo *
-          <p>
-            {{ mediaConsumoResumoViagem | number:'1.2-2' }} km/L
-          </p>
-        </ion-label>
-      </ion-item>
-
-      <!-- Botão Mostrar mais/menos -->
-      <div class="ion-text-start ion-margin-vertical ion-padding-start">
-        <span 
-          (click)="mostrarMaisCampos = !mostrarMaisCampos" 
-          style="color: var(--ion-color-primary); cursor: pointer; text-decoration: underline;">
-          {{ mostrarMaisCampos ? 'Mostrar menos' : 'Mostrar mais' }}
-        </span>
-      </div>
-
-      <!-- Campos Secundários -->
-      <div *ngIf="mostrarMaisCampos">
-        <!-- Data e Hora -->
-        <ion-item lines="none" [class.required-field]="tripDateError">
-          <div class="linha-data-hora">
-            <div class="container-data">
-              <span>Data *</span>
-              <ion-datetime-button datetime="trip-datetime" class="date-inline-button"></ion-datetime-button>
-            </div>
-            <div class="container-hora">
-              <span>Hora</span>
-              <ion-datetime-button datetime="trip-time" class="time-inline-button"></ion-datetime-button>
-            </div>
-          </div>
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
               <ion-datetime id="trip-datetime" presentation="date" locale="pt-BR" [formatOptions]="opcoesFormatoData" [(ngModel)]="tripDate" (ionChange)="tripDateError = false"></ion-datetime>
@@ -132,41 +99,16 @@
               <ion-datetime id="trip-time" presentation="time" locale="pt-BR" [(ngModel)]="tripTime"></ion-datetime>
             </ng-template>
           </ion-modal>
-        </ion-item>
 
-        <!-- Pedágio -->
-        <ion-item>
-          <ion-input label="Pedágio (R$)" type="tel" inputmode="decimal" label-placement="floating" placeholder="R$ 0,00" [(ngModel)]="tollPriceStr" (ionInput)="formatCurrencyToll($event)"></ion-input>
-        </ion-item>
-
-        <!-- Observações -->
-        <ion-item>
-          <ion-textarea label="Observações" label-placement="floating" placeholder="Opcional" [(ngModel)]="costObservations" rows="3"></ion-textarea>
-        </ion-item>
-      </div>
-    </ion-list>
-
-    <ion-button expand="block" class="ion-margin-top" (click)="calculate()">
-      Calcular Custo
-    </ion-button>
-
-    <ion-card *ngIf="result !== null" class="ion-margin-top">
-      <ion-card-header>
-        <ion-card-title>Resultado</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <h2 class="trip-cost-total">
-          Custo Estimado (combustível + pedágios): {{ result | currency:'BRL' }}
-        </h2>
-        <p class="trip-liters-text">
-          Litros necessários: {{ litersNeeded | number:'1.1-2' }} L
-        </p>
-        <ion-button expand="block" class="ion-margin-top" (click)="saveTrip()">
-          {{ isEditing ? 'Atualizar Viagem' : 'Salvar Viagem' }}
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
-  </div>
+      <div class="trip-field"><span class="trip-label" id="trip-notes-label">Observações</span><ion-textarea aria-labelledby="trip-notes-label" placeholder="Opcional" [(ngModel)]="costObservations" rows="3"></ion-textarea></div>
+    </div>
+    <ion-button expand="block" class="trip-submit" (click)="calculate()">Calcular custo da viagem</ion-button>
+    <section *ngIf="result !== null" class="trip-result" aria-live="polite">
+      <span>Custo estimado</span><strong>{{ result | currency:'BRL' }}</strong>
+      <p>{{ litersNeeded | number:'1.1-2' }} L de combustível · pedágios incluídos</p>
+      <ion-button expand="block" class="trip-submit" (click)="saveTrip()">{{ isEditing ? 'Salvar alterações' : 'Salvar viagem' }}</ion-button>
+    </section>
+  </main>
 
   <!-- CONSUMPTION CALCULATOR VIEW (Restored Logic) -->
   <div *ngIf="currentView === 'consumption'">

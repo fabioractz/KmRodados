@@ -38,7 +38,7 @@ export class SettingsPage implements OnInit {
   selectedColor: string = '#3880ff';
   showColorPicker: boolean = false;
   
-  homeCardsOrder: string[] = ['summary', 'quickActions', 'consumption', 'maintenance', 'history'];
+  homeCardsOrder: string[] = ['quickActions', 'summary', 'history', 'consumption', 'maintenance'];
   readonly homeCardsLabels: Record<string, string> = {
     summary: 'Resumo do Veículo',
     quickActions: 'Ações Rápidas',
@@ -93,10 +93,14 @@ export class SettingsPage implements OnInit {
         const arr = JSON.parse(storedOrder);
         if (Array.isArray(arr) && arr.length) {
           // Filter unknown keys and ensure all known keys are present
-          const known = ['summary', 'quickActions', 'consumption', 'maintenance', 'history'];
+          const known = ['quickActions', 'summary', 'history', 'consumption', 'maintenance'];
           const filtered = arr.filter((k: string) => known.includes(k));
           const missing = known.filter(k => !filtered.includes(k));
-          this.homeCardsOrder = [...filtered, ...missing];
+          // Upgrade the previous default layout while preserving custom card orders.
+          const previousDefault = ['summary', 'quickActions', 'consumption', 'maintenance', 'history'];
+          if (JSON.stringify(filtered) !== JSON.stringify(previousDefault)) {
+            this.homeCardsOrder = [...filtered, ...missing];
+          }
         }
       } catch {}
     }
@@ -125,6 +129,14 @@ export class SettingsPage implements OnInit {
       localStorage.setItem('home_card_order', JSON.stringify(this.homeCardsOrder));
     }
     (ev as any).detail.complete();
+  }
+
+  moveCard(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (index < 0 || index >= this.homeCardsOrder.length || target < 0 || target >= this.homeCardsOrder.length) return;
+    const moved = this.homeCardsOrder.splice(index, 1)[0];
+    this.homeCardsOrder.splice(target, 0, moved);
+    localStorage.setItem('home_card_order', JSON.stringify(this.homeCardsOrder));
   }
 
   toggleCardEnabled(key: string, ev: CustomEvent) {

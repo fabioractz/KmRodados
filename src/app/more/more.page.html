@@ -1,41 +1,30 @@
-<ion-header [translucent]="true" mode="ios">
-  <ion-toolbar>
-    <ion-title>Mais</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense" mode="ios">
-    <ion-toolbar>
-      <ion-title size="large">Mais</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <ion-card class="more-menu-card">
-    <ion-list>
-      <ion-item button detail="false" (click)="abrirDespesas()" class="menu-item-despesas" lines="none">
-        <ion-icon slot="start" name="card-outline" class="icone-despesa-menu"></ion-icon>
-        <ion-label>Despesas</ion-label>
-        <ion-icon slot="end" name="chevron-forward-outline" class="chevron-custom"></ion-icon>
-      </ion-item>
-
-      <div class="custom-divider"></div>
-
-      <ion-item button detail="false" (click)="abrirReceitas()" class="menu-item-receitas" lines="none">
-        <ion-icon slot="start" name="cash-outline" class="icone-receita-menu"></ion-icon>
-        <ion-label>Receitas</ion-label>
-        <ion-icon slot="end" name="chevron-forward-outline" class="chevron-custom"></ion-icon>
-      </ion-item>
-    </ion-list>
-  </ion-card>
-
-  <ion-card class="more-menu-card">
-    <ion-list>
-      <ion-item button detail="false" (click)="abrirConfiguracoes()" class="menu-item-config" lines="none">
-        <ion-icon slot="start" name="settings-outline" class="icone-config-menu"></ion-icon>
-        <ion-label>Configurações</ion-label>
-        <ion-icon slot="end" name="chevron-forward-outline" class="chevron-custom"></ion-icon>
-      </ion-item>
-    </ion-list>
-  </ion-card>
+<ion-content class="more-content">
+  <main class="more-layout">
+    <header><p class="eyebrow">KM RODADOS</p><h1>Mais</h1><p class="description">Finanças e preferências do seu app.</p></header>
+    <section aria-labelledby="finance-heading">
+      <h2 id="finance-heading">Finanças do veículo</h2>
+      <div class="menu-group">
+        <button type="button" class="menu-row" (click)="abrirDespesas()">
+          <span class="menu-icon"><ion-icon name="card-outline" aria-hidden="true"></ion-icon></span>
+          <span class="menu-copy"><strong>Despesas</strong><small>Organize seus gastos</small></span>
+          <ion-icon class="menu-arrow" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+        </button>
+        <button type="button" class="menu-row" (click)="abrirReceitas()">
+          <span class="menu-icon"><ion-icon name="cash-outline" aria-hidden="true"></ion-icon></span>
+          <span class="menu-copy"><strong>Receitas</strong><small>Acompanhe os recebimentos</small></span>
+          <ion-icon class="menu-arrow" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+        </button>
+      </div>
+    </section>
+    <section aria-labelledby="preferences-heading">
+      <h2 id="preferences-heading">Preferências</h2>
+      <div class="menu-group">
+        <button type="button" class="menu-row" (click)="abrirConfiguracoes()">
+          <span class="menu-icon"><ion-icon name="settings-outline" aria-hidden="true"></ion-icon></span>
+          <span class="menu-copy"><strong>Configurações</strong><small>Personalize seu app</small></span>
+          <ion-icon class="menu-arrow" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+        </button>
+      </div>
+    </section>
+  </main>
 </ion-content>

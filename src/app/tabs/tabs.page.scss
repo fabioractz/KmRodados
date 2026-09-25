@@ -1,5 +1,189 @@
+// ------------------------------------------------------------------
+// Variáveis de design do menu do rodapé (dock / tab-bar)
+// ------------------------------------------------------------------
+:host {
+  --dock-bg: #f3f5f9;
+  --dock-surface: #fff;
+  --dock-border: #dce4ef;
+  --dock-muted: #59677c;
+  --dock-active: var(--ion-color-primary-shade);
+  --dock-selected: color-mix(in srgb, var(--ion-color-primary) 12%, var(--dock-surface));
+
+  // Altura útil equilibrada para comportar ícones de tamanho ideal (21px) e texto legível (10.5px)
+  --dock-altura-conteudo: 42px;
+
+  // Respiro inferior inteligente:
+  // - Em aparelhos sem barra de gestos (desktop/botões físicos): 4px
+  // - No iOS com barra de gestos (home indicator): calibrado para ~17px,
+  //   garantindo que a linha do sistema nunca encoste no texto dos botões
+  --dock-respiro-inferior: clamp(4px, calc(env(safe-area-inset-bottom, 0px) * 0.5), 18px);
+}
+
+:host-context(body.dark) {
+  --dock-bg: #10151e;
+  --dock-surface: #1b2330;
+  --dock-border: #354053;
+  --dock-muted: #b1bdd0;
+  --dock-active: var(--ion-color-primary-tint);
+  --dock-selected: color-mix(in srgb, var(--ion-color-primary) 18%, var(--dock-surface));
+}
+
+ion-tabs {
+  background: var(--dock-bg);
+}
+
+// ------------------------------------------------------------------
+// Tab Bar (Barra de navegação inferior)
+// ------------------------------------------------------------------
 ion-tab-bar {
-  height: auto;
-  contain: content;
-  padding-bottom: var(--ion-safe-area-bottom, env(safe-area-inset-bottom, 0px));
+  --background: var(--dock-surface) !important;
+  --border: 0 !important;
+  // Anula a inserção interna duplicada do Ionic
+  --ion-safe-area-bottom: 0px;
+
+  display: flex !important;
+  align-items: flex-start !important;
+  flex: 0 0 auto;
+  width: 100%;
+
+  // Altura proporcional: botões (42px) + espaçamento superior (3px) + respiro seguro da barra de gestos
+  height: calc(var(--dock-altura-conteudo) + var(--dock-respiro-inferior) + 3px) !important;
+  min-height: 0 !important;
+  max-height: calc(var(--dock-altura-conteudo) + var(--dock-respiro-inferior) + 3px) !important;
+
+  contain: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 3px 6px var(--dock-respiro-inferior) !important;
+  border: 0 !important;
+  border-top: 1px solid var(--dock-border) !important;
+  border-radius: 0;
+  box-shadow: none;
+  transition: height 200ms ease, max-height 200ms ease, opacity 150ms ease;
+}
+
+// ------------------------------------------------------------------
+// Botões da barra de navegação
+// ------------------------------------------------------------------
+ion-tab-button {
+  --background: transparent;
+  --color: var(--dock-muted);
+  --color-selected: var(--dock-active);
+  --padding-start: 2px;
+  --padding-end: 2px;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  flex: 1 1 0;
+  min-width: 0;
+  height: var(--dock-altura-conteudo) !important;
+  min-height: 0 !important;
+  max-height: var(--dock-altura-conteudo) !important;
+  max-width: none;
+  margin: 0 1px;
+  border-radius: 10px;
+}
+
+ion-tab-button::part(native) {
+  border-radius: 10px;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+// Ícones (ampliados para preencher o espaço disponível com equilíbrio)
+ion-tab-button ion-icon {
+  color: var(--dock-muted);
+  font-size: 25px;
+  margin: 0;
+  padding: 1px 8px;
+  border-radius: 12px;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+ion-tab-button.tab-selected ion-icon {
+  color: var(--dock-active);
+  background: var(--dock-selected);
+}
+
+// Rótulos de texto
+ion-tab-button ion-label {
+  font-size: 10px;
+  line-height: 1.1;
+  margin: 1px 0 0 0;
+  letter-spacing: -0.01em;
+}
+
+ion-tab-button.tab-selected ion-label {
+  font-weight: 600;
+}
+
+// Acessibilidade — foco visível
+ion-tab-button::part(native):focus-visible {
+  outline: 2px solid var(--dock-active);
+  outline-offset: -2px;
+}
+
+// ------------------------------------------------------------------
+// Teclado virtual aberto — oculta a barra para não cobrir campos
+// ------------------------------------------------------------------
+:host-context(body.keyboard-is-open) ion-tab-bar {
+  height: 0 !important;
+  max-height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border-top: 0 !important;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+// ------------------------------------------------------------------
+// Telas com largura muito reduzida (< 360px)
+// ------------------------------------------------------------------
+@media (max-width: 360px) {
+  ion-tab-bar {
+    padding-inline: 2px !important;
+  }
+  ion-tab-button {
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+  ion-tab-button ion-icon {
+    font-size: 19px;
+    padding: 1px 6px;
+  }
+  ion-tab-button ion-label {
+    font-size: 9.5px;
+  }
+}
+
+// ------------------------------------------------------------------
+// Telas curtas em altura (< 580px)
+// ------------------------------------------------------------------
+@media (max-height: 580px) {
+  :host {
+    --dock-altura-conteudo: 36px;
+  }
+  ion-tab-button ion-icon {
+    font-size: 18px;
+    padding: 1px 6px;
+  }
+  ion-tab-button ion-label {
+    font-size: 9px;
+  }
+}
+
+// ------------------------------------------------------------------
+// Acessibilidade — redução de movimento
+// ------------------------------------------------------------------
+@media (prefers-reduced-motion: reduce) {
+  ion-tab-button::part(native),
+  ion-tab-button ion-icon,
+  ion-tab-bar {
+    transition: none;
+  }
 }

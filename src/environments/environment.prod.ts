@@ -15,7 +15,7 @@
 export const environment = {
   production: true,
   /** Versão do app (deve ser igual ao package.json); usada em Sobre quando não há versão nativa. */
-  version: '1.0.4',
+  version: '1.0.5',
   ads: {
     // Se estiver "false", nenhum anúncio será carregado na versão de produção
     enabled: true,

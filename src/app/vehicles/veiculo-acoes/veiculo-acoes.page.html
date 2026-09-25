@@ -1,63 +1,53 @@
 <ion-header mode="ios">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/vehicles" text="Voltar"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/vehicles" text="Veículos"></ion-back-button>
     </ion-buttons>
-    <ion-title>Ações do Veículo</ion-title>
+    <ion-title>Meu veículo</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-header collapse="condense" mode="ios">
-    <ion-toolbar>
-      <ion-title size="large">Ações do Veículo</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <div class="ion-padding">
-    <div *ngIf="veiculo">
-      <div class="cabecalho-veiculo">
-        <div class="dados-veiculo">
-          <h2>{{ veiculo.model }} <small>({{ veiculo.plate | uppercase }})</small></h2>
-          <p><strong>Tipo:</strong> {{ servicoVeiculo.getVehicleTypeName(veiculo.type) }}</p>
+<ion-content class="vehicle-content">
+  <main class="vehicle-layout" *ngIf="veiculo">
+    <section class="vehicle-hero" aria-label="Dados do veículo">
+      <div class="vehicle-identity">
+        <span class="vehicle-symbol"><ion-icon name="car-sport-outline" aria-hidden="true"></ion-icon></span>
+        <div class="vehicle-name">
+          <h1>{{ veiculo.model }}</h1>
+          <p>{{ veiculo.plate | uppercase }} · {{ servicoVeiculo.getVehicleTypeName(veiculo.type) }}</p>
         </div>
-        <ion-button
-          fill="clear"
-          size="small"
-          class="botao-editar-topo"
-          (click)="editarVeiculo()"
-          aria-label="Editar veículo"
-          title="Editar veículo">
-          <ion-icon name="create-outline" slot="icon-only"></ion-icon>
-        </ion-button>
       </div>
-      <p *ngIf="veiculo.odometer != null">
-        <strong>Odômetro:</strong> {{ veiculo.odometer | number }} km
-      </p>
-    </div>
-
-    <div class="ion-margin-top" *ngIf="veiculo">
-      <div class="quick-action-row" (click)="abastecer()">
-        <div class="square-icon-btn square-icon-btn-abastecimento">
-          <ion-icon name="gas-station" aria-hidden="true"></ion-icon>
-        </div>
-        <span class="action-label">Abastecer</span>
+      <span class="default-badge" *ngIf="veiculo.isDefault">
+        <ion-icon name="star-outline" aria-hidden="true"></ion-icon>Principal
+      </span>
+      <div class="vehicle-odometer">
+        <span>Odômetro atual</span>
+        <strong>{{ odometroAtual | number:'1.0-0' }} <small>km</small></strong>
       </div>
+    </section>
 
-      <div class="quick-action-row" (click)="fazerMedia()">
-        <div class="square-icon-btn square-icon-btn-media">
-          <ion-icon name="speedometer" aria-hidden="true"></ion-icon>
-        </div>
-        <span class="action-label">Fazer Média</span>
+    <section aria-labelledby="vehicle-actions-heading">
+      <h2 id="vehicle-actions-heading">Ações do veículo</h2>
+      <div class="vehicle-actions">
+        <button type="button" class="vehicle-action" (click)="abastecer()">
+          <span class="action-icon"><ion-icon name="gas-station" aria-hidden="true"></ion-icon></span>
+          <span class="action-copy"><strong>Abastecer</strong><span>Registrar um abastecimento</span></span>
+          <ion-icon class="action-arrow" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+        </button>
+        <button type="button" class="vehicle-action" (click)="fazerMedia()">
+          <span class="action-icon"><ion-icon name="speedometer" aria-hidden="true"></ion-icon></span>
+          <span class="action-copy"><strong>Fazer média</strong><span>Calcular o consumo</span></span>
+          <ion-icon class="action-arrow" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+        </button>
+        <button type="button" class="vehicle-action" (click)="manutencao()">
+          <span class="action-icon"><ion-icon name="construct-outline" aria-hidden="true"></ion-icon></span>
+          <span class="action-copy"><strong>Manutenção</strong><span>Registrar um serviço</span></span>
+          <ion-icon class="action-arrow" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+        </button>
       </div>
-
-      <div class="quick-action-row" (click)="manutencao()">
-        <div class="square-icon-btn square-icon-btn-manutencao">
-          <ion-icon name="construct-outline" aria-hidden="true"></ion-icon>
-        </div>
-        <span class="action-label">Manutenção</span>
-      </div>
-
-    </div>
-  </div>
+    </section>
+    <button type="button" class="edit-vehicle" (click)="editarVeiculo()">
+      <ion-icon name="create-outline" aria-hidden="true"></ion-icon>Editar veículo
+    </button>
+  </main>
 </ion-content>

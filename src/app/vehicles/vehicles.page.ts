@@ -5,7 +5,7 @@ import { ActionSheetController, AlertController, ToastController } from '@ionic/
 import { ServicoAjudaOdometro } from '../services/ajuda-odometro.service';
 import { addIcons } from 'ionicons';
 import { 
-  carSportOutline, carOutline, busOutline, close, star, starOutline, 
+  addOutline, ellipsisHorizontal, arrowForwardOutline, carSportOutline, carOutline, busOutline, close, star, starOutline, 
   createOutline, trashOutline, colorFillOutline, constructOutline, calculatorOutline, speedometer 
 } from 'ionicons/icons';
 
@@ -37,6 +37,9 @@ export class VehiclesPage implements OnInit {
     public ajuda_odometro: ServicoAjudaOdometro
   ) {
     addIcons({ 
+      'add-outline': addOutline,
+      'ellipsis-horizontal': ellipsisHorizontal,
+      'arrow-forward-outline': arrowForwardOutline,
       'car-sport-outline': carSportOutline, 
       'car-outline': carOutline, 
       'bus-outline': busOutline, 
@@ -57,6 +60,32 @@ export class VehiclesPage implements OnInit {
     this.vehicleService.getVehicles().subscribe(vehicles => {
       this.vehicles = vehicles;
     });
+  }
+
+  getCurrentOdometer(vehicle: Vehicle): number {
+    const readings = [
+      vehicle.odometer,
+      ...(vehicle.supplies || []).map(s => s.finalOdometer ?? s.initialOdometer ?? s.odometer),
+      ...(vehicle.consumptionHistory || []).map(c => c.finalOdometer),
+      ...(vehicle.maintenance || []).map(m => m.odometer),
+      ...(vehicle.otherExpenses || []).map(e => e.odometer)
+    ];
+    return readings.reduce<number>((highest, value) =>
+      typeof value === 'number' && Number.isFinite(value) ? Math.max(highest, value) : highest, 0);
+  }
+
+  async openVehicleMenu(vehicle: Vehicle) {
+    const sheet = await this.actionSheetCtrl.create({
+      header: vehicle.model,
+      subHeader: vehicle.plate,
+      buttons: [
+        { text: 'Editar veículo', icon: 'create-outline', handler: () => { this.editVehicle(vehicle); } },
+        ...(!vehicle.isDefault ? [{ text: 'Definir como principal', icon: 'star-outline', handler: () => { void this.setDefault(vehicle); } }] : []),
+        { text: 'Excluir veículo', icon: 'trash-outline', role: 'destructive', handler: () => { void this.deleteVehicle(vehicle); } },
+        { text: 'Cancelar', icon: 'close', role: 'cancel' }
+      ]
+    });
+    await sheet.present();
   }
 
   getTotalExpenses(vehicle: Vehicle): number {
