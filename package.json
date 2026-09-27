@@ -1,6 +1,6 @@
 {
   "name": "ionic-app-base",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
   "scripts": {
@@ -17,7 +17,10 @@
     "sync:all": "npx cap sync && node scripts/patch-admob.mjs",
     "release:android": "npm run version:sync && npm run build -- --configuration production && npm run sync:android",
     "release:ios": "npm run version:sync && npm run build -- --configuration production && npm run sync:ios",
-    "capacitor:sync:after": "node scripts/patch-admob.mjs && node scripts/sync-ios-icons.mjs"
+    "capacitor:sync:after": "node scripts/sync-version.mjs && node scripts/patch-admob.mjs && node scripts/sync-ios-icons.mjs && node scripts/sync-android-icons.mjs",
+    "icons:android": "node scripts/sync-android-icons.mjs",
+    "prebuild": "npm run version:sync",
+    "ionic:build:before": "npm run version:sync"
   },
   "private": true,
   "dependencies": {
@@ -31,7 +34,7 @@
     "@angular/platform-browser-dynamic": "^20.0.0",
     "@angular/router": "^20.0.0",
     "@capacitor-community/admob": "^8.0.0",
-    "@capacitor/android": "^8.0.2",
+    "@capacitor/android": "8.0.2",
     "@capacitor/app": "8.0.0",
     "@capacitor/core": "8.0.2",
     "@capacitor/filesystem": "^8.1.2",

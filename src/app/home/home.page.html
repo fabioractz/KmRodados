@@ -1,10 +1,11 @@
 <ion-content class="home-content">
   <main class="home-layout">
     <header class="home-heading">
-      <div><p class="eyebrow">KM RODADOS</p><h1>Meu veículo</h1></div>
-      <button class="settings-button" type="button" aria-label="Personalizar página inicial" (click)="openSettings()"><ion-icon name="options-outline" aria-hidden="true"></ion-icon></button>
+      <div><p class="eyebrow">KM RODADOS</p><h1>{{ vehicles.length ? 'Meu veículo' : 'Bem-vindo' }}</h1></div>
+      <button *ngIf="vehicles.length > 0" class="settings-button" type="button" aria-label="Personalizar página inicial" (click)="openSettings()"><ion-icon name="options-outline" aria-hidden="true"></ion-icon></button>
     </header>
 
+    <ng-container *ngIf="vehicles.length > 0; else firstVehicle">
     <section class="vehicle-hero" *ngIf="summaryVehiclePlate && homeCardsEnabled['summary']" aria-label="Veículo selecionado">
       <div class="vehicle-picker">
         <span class="vehicle-icon"><ion-icon name="car" aria-hidden="true"></ion-icon></span>
@@ -27,10 +28,7 @@
       <h2>Seu início, do seu jeito</h2><p>Escolha os cards que deseja acompanhar na página inicial.</p>
       <ion-button (click)="openSettings()">Personalizar início</ion-button>
     </div>
-    <div class="home-empty-state" *ngIf="!noHomeCardsEnabled && vehicles.length === 0">
-      <ion-icon name="car" aria-hidden="true"></ion-icon><h2>Adicione seu primeiro veículo</h2><p>Acompanhe abastecimentos, consumo e manutenções em um só lugar.</p>
-      <ion-button routerLink="/tabs/vehicles/form">Adicionar veículo</ion-button>
-    </div>
+
 
     <div class="home-cards" *ngIf="!noHomeCardsEnabled">
       <section class="quick-actions-section" *ngIf="homeCardsEnabled['quickActions']" [style.order]="getOrderIndex('quickActions')" aria-label="Ações rápidas">
@@ -42,15 +40,24 @@
       </section>
 
       <ion-card class="overview-card" *ngIf="summaryVehiclePlate && homeCardsEnabled['summary']" [style.order]="getOrderIndex('summary')">
-        <ion-card-header><div class="card-header-row"><ion-card-title>Visão geral</ion-card-title><ion-button fill="clear" size="small" class="card-toggle-btn" aria-label="Expandir ou recolher visão geral" [attr.aria-expanded]="showSummaryCard" (click)="toggleCardExpansion('summary')"><ion-icon [name]="showSummaryCard ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></ion-icon></ion-button></div></ion-card-header>
+        <ion-card-header><div class="card-header-row"><ion-card-title>Visão geral</ion-card-title><button class="help-button overview-help" type="button" aria-label="Ajuda sobre consumo médio" (click)="ajuda_odometro.mostrarAjudaMediaConsumo($event)"><ion-icon name="help-circle-outline" aria-hidden="true"></ion-icon></button><ion-button fill="clear" size="small" class="card-toggle-btn" aria-label="Expandir ou recolher visão geral" [attr.aria-expanded]="showSummaryCard" (click)="toggleCardExpansion('summary')"><ion-icon [name]="showSummaryCard ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></ion-icon></ion-button></div></ion-card-header>
         <ion-card-content *ngIf="showSummaryCard">
           <div class="metrics">
             <div class="metric">
-              <div class="metric-label">Consumo médio <button class="help-button" type="button" aria-label="Ajuda sobre consumo médio" (click)="ajuda_odometro.mostrarAjudaMediaConsumo($event)"><ion-icon name="help-circle-outline" aria-hidden="true"></ion-icon></button></div>
-              <ng-container *ngIf="analiseConsumoResumo.ciclosValidos.length > 0; else waitingConsumption"><div class="metric-value">{{ avgConsumption | number:'1.2-2' }} <span>km/L</span></div><div class="metric-caption">{{ analiseConsumoResumo.ciclosValidos.length }} ciclos válidos</div></ng-container>
-              <ng-template #waitingConsumption><div class="metric-value">—</div><div class="metric-caption">{{ temDoisAbastecimentosTanqueCompleto ? 'Revise os dados dos abastecimentos' : 'Aguardando dois tanques cheios' }}</div></ng-template>
+              <div class="metric-top">
+                <div class="metric-label">Consumo médio</div>
+                <div class="metric-value" *ngIf="analiseConsumoResumo.ciclosValidos.length > 0; else waitingConsumption">{{ avgConsumption | number:'1.2-2' }} <span>km/L</span></div>
+                <ng-template #waitingConsumption><div class="metric-value">—</div></ng-template>
+              </div>
+              <div class="metric-caption">{{ analiseConsumoResumo.ciclosValidos.length > 0 ? analiseConsumoResumo.ciclosValidos.length + ' ciclos válidos' : temDoisAbastecimentosTanqueCompleto ? 'Revise os dados dos abastecimentos' : 'Aguardando dois tanques cheios' }}</div>
             </div>
-            <div class="metric"><div class="metric-label">Último abastecimento</div><div class="metric-value">{{ lastSupplyPrice > 0 ? (lastSupplyPrice | currency:'BRL') : '—' }}</div><div class="metric-caption" *ngIf="lastSupplyLiters > 0">{{ lastSupplyLiters | number:'1.2-2' }} L<span *ngIf="lastSupplyDateObj"> · {{ lastSupplyDateObj | date:'dd MMM' }}</span></div><div class="metric-caption" *ngIf="lastSupplyLiters === 0">Nenhum abastecimento</div></div>
+            <div class="metric">
+              <div class="metric-top">
+                <div class="metric-label">Último abastecimento</div>
+                <div class="metric-value"><ng-container *ngIf="lastSupplyPrice > 0; else noSupplyValue"><span>R$</span> {{ lastSupplyPrice | number:'1.2-2' }}</ng-container><ng-template #noSupplyValue>—</ng-template></div>
+              </div>
+              <div class="metric-caption"><ng-container *ngIf="lastSupplyLiters > 0; else noSupplyCaption">{{ lastSupplyLiters | number:'1.2-2' }} L<span *ngIf="lastSupplyDateObj"> · {{ lastSupplyDateObj | date:'dd MMM' }}</span></ng-container><ng-template #noSupplyCaption>Nenhum abastecimento</ng-template></div>
+            </div>
           </div>
           <a class="consumption-warning" *ngIf="trechosPendentes > 0" routerLink="/supply-history" [queryParams]="{ plate: summaryVehiclePlate, view: 'issues' }">
             <ion-icon name="warning-outline" aria-hidden="true"></ion-icon>
@@ -231,5 +238,14 @@
   </ion-card>
 
     </div>
+    </ng-container>
+    <ng-template #firstVehicle>
+      <section class="first-vehicle" aria-labelledby="first-vehicle-title">
+        <span class="first-vehicle-icon"><ion-icon name="car" aria-hidden="true"></ion-icon></span>
+        <h2 id="first-vehicle-title">Adicione seu primeiro veículo</h2>
+        <p>Cadastre seu veículo para acompanhar abastecimentos, consumo e manutenções em um só lugar.</p>
+        <ion-button routerLink="/tabs/vehicles/form" expand="block">Adicionar veículo</ion-button>
+      </section>
+    </ng-template>
   </main>
 </ion-content>

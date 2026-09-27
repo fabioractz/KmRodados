@@ -63,3 +63,12 @@ ion-datetime-button::part(native) { background: transparent; color: var(--form-t
 .required-field ion-input, .required-field ion-textarea, .required-field ion-select, .required-field .date-control, .form-vehicle.required-field { outline: 2px solid var(--ion-color-danger); outline-offset: 1px; }
 .additional-fields ion-item { --background: var(--form-paper); --color: var(--form-text); --border-width: 0; border: 1px solid var(--form-line); border-radius: 12px; margin-bottom: 16px; }
 @media (max-width: 360px) { .vehicle-form { padding-inline: 16px; } .form-grid { gap: 10px; } h1 { font-size: 25px; } .tank-control small { max-width: 180px; } }
+
+// Layout for tablets and larger screens.
+
+@media (min-width: 768px) {
+  .vehicle-form { max-width: 960px; width: 100%; padding: 24px 32px calc(32px + var(--ion-safe-area-bottom, 0px)); }
+  .form-grid { gap: 24px; }
+  .form-description { font-size: 15px; }
+  .field-label { font-size: 14px; }
+}

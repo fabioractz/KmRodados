@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'node:url';
 
-const raiz = process.cwd();
+const raiz = fileURLToPath(new URL('../', import.meta.url));
 
 function ler_versao_pacote() {
   const caminho_pacote = path.join(raiz, 'package.json');

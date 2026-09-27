@@ -217,7 +217,10 @@ export class HomePage implements OnInit, OnDestroy {
     this.vehicleService.getVehicles().subscribe(vehicles => {
       this.vehicles = vehicles;
       const defaultVehicle = this.vehicles.find(v => v.isDefault);
-      if (defaultVehicle) {
+      if (this.vehicles.length === 0) {
+        this.selectedVehiclePlate = '';
+        this.summaryVehiclePlate = '';
+      } else if (defaultVehicle) {
         this.selectedVehiclePlate = defaultVehicle.plate;
         this.summaryVehiclePlate = defaultVehicle.plate;
       } else if (this.vehicles.length === 1) {

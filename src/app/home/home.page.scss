@@ -139,3 +139,54 @@ a.consumption-warning span { flex: 1; }
 .consumption-bubble small, .consumption-bubble strong { display: block; padding-right: 12px; }
 .consumption-bubble strong { margin-top: 6px; font-size: 18px; }
 .bubble-close { position: absolute; top: 2px; right: 2px; width: 28px; height: 28px; border: 0; background: transparent; color: var(--home-muted); }
+
+// Layout for tablets and larger screens.
+
+@media (min-width: 768px) {
+  .home-layout { max-width: var(--app-page-width); padding-inline: var(--app-page-gutter); }
+  h1 { font-size: 34px; }
+  .vehicle-hero { padding: 28px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+  .vehicle-picker { flex: 1; min-width: 0; }
+  .hero-odometer { margin: 0; padding: 0 0 0 28px; border-top: 0; border-left: 1px solid rgb(255 255 255 / 20%); }
+  .odometer-value { font-size: 40px; }
+  .quick-action { min-height: 96px; font-size: 15px; }
+  .metric { padding: 22px; }
+  .metric-value { font-size: 30px; }
+  .metric-label, .metric-caption, .hero-label { font-size: 14px; }
+  ion-card-title { font-size: 20px; }
+  .chart-container { height: 300px; }
+}
+@media (min-width: 1024px) {
+  .home-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; align-items: start; }
+  .home-cards > * { min-width: 0; }
+  .quick-actions-section { grid-column: 1 / -1; }
+}
+
+// Overview cards: aligned content with a separate supporting footer.
+.metrics { gap: 12px; align-items: stretch; }
+.metric { display: grid; grid-template-rows: 1fr auto; padding: 0; border-radius: 18px; overflow: hidden; }
+.metric-top { display: flex; flex-direction: column; justify-content: space-between; padding: 18px 16px 16px; min-width: 0; }
+.metric-label { display: block; min-height: 0; line-height: 1.5; margin-bottom: 14px; }
+.metric-value { line-height: 1.25; margin: 0; }
+.metric-caption { border-top: 1px solid var(--home-border); padding: 12px 16px; min-height: 44px; background: color-mix(in srgb, var(--home-bg) 45%, var(--home-surface)); }
+.overview-help { color: var(--home-muted); min-width: 44px; min-height: 44px; }
+@supports (grid-template-rows: subgrid) {
+  .metrics { row-gap: 0; }
+  .metric { grid-row: span 2; grid-template-rows: subgrid; row-gap: 0; }
+}
+@media (max-width: 360px) {
+  .metrics { column-gap: 8px; }
+  .metric-top { padding: 16px 10px; }
+  .metric-caption { padding-inline: 10px; }
+}
+@media (min-width: 768px) {
+  .metric-top { padding: 22px; }
+  .metric-caption { padding-inline: 22px; }
+}
+
+.first-vehicle { width: 100%; max-width: 560px; margin: 24px auto; padding: 28px 22px; box-sizing: border-box; border: 1px solid var(--home-border); border-radius: 22px; background: var(--home-surface); text-align: center; }
+.first-vehicle-icon { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 20px; border-radius: 18px; background: var(--home-soft); color: var(--home-accent); }
+.first-vehicle-icon ion-icon { color: inherit; font-size: 32px; }
+.first-vehicle h2 { margin: 0 0 12px; color: var(--home-text); font-size: 22px; line-height: 1.3; }
+.first-vehicle p { margin: 0 0 24px; color: var(--home-muted); font-size: 14px; line-height: 1.6; }
+.first-vehicle ion-button { min-height: 48px; height: auto; margin: 0; --border-radius: 12px; --box-shadow: none; --padding-top: 14px; --padding-bottom: 14px; white-space: normal; text-transform: none; letter-spacing: 0; font-size: 16px; }

@@ -545,3 +545,14 @@ input[type=number] {
 .trip-validation { padding: 14px; border: 1px solid var(--ion-color-danger); border-radius: 12px; background: var(--trip-paper); color: var(--trip-text); font-size: 13px; margin-bottom: 18px; }
 .trip-invalid ion-input, .trip-invalid ion-select, .trip-invalid .trip-readonly, .trip-invalid .trip-date { outline: 2px solid var(--ion-color-danger); outline-offset: 1px; }
 .trip-field ion-input.has-focus, .trip-field ion-textarea.has-focus, .trip-more:focus-visible { outline: 2px solid var(--trip-accent); outline-offset: 2px; }
+
+// Layout for tablets and larger screens.
+
+@media (min-width: 768px) {
+  .calculator-menu { max-width: var(--app-page-width); padding-inline: var(--app-page-gutter); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; align-items: start; }
+  .calculator-menu > header { grid-column: 1 / -1; }
+  .calculator-menu > section { min-width: 0; }
+  .trip-form { max-width: 960px; width: 100%; padding-inline: 24px; }
+  .trip-grid { gap: 24px; }
+  .ios-calculator-container { max-width: 520px; }
+}

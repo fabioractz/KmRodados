@@ -103,3 +103,15 @@ h1 { font-size: 26px; line-height: 1.25; letter-spacing: -.6px; color: var(--his
   .supply-heading { flex-wrap: wrap; }
   .supply-heading time { flex-basis: 100%; text-align: left; padding-left: 54px; }
 }
+
+// Layout for tablets and larger screens.
+
+@media (min-width: 768px) {
+  .history-layout { max-width: var(--app-page-width); padding: 24px var(--app-page-gutter); }
+}
+@media (min-width: 1024px) {
+  .supply-records, .cycles-section { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; align-items: start; }
+  .supply-month, .cycles-section > h2, .cycles-section > p, .cycles-section > ion-button, .supply-records > .empty-message { grid-column: 1 / -1; }
+  .supply-card, .cycle-card { min-width: 0; margin: 0; }
+  .cycles-section > ion-button { justify-self: start; }
+}
